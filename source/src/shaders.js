@@ -290,9 +290,10 @@ fn shadow1(p: vec3f) -> f32 {
 }
 fn shadow9(p: vec3f) -> f32 {
   if (LOW) { return shadow1(p); }
-  let s = shUV(p); let e = 1.4 / ${SHADOW}.; var a = 0.;
-  for (var x = -1; x <= 1; x++) { for (var y = -1; y <= 1; y++) { a += textureSampleCompareLevel(tSh, sS, s.xy + vec2f(f32(x), f32(y)) * e, s.z); } }
-  return mix(1., a / 9., nearK(p));
+  let s = shUV(p); let e = 2.4 / ${SHADOW}.; var a = 0.;
+  let r = fract(sin(dot(p, vec3f(12.9898, 78.233, 37.719))) * 43758.5453) * TAU;
+  for (var k = 0; k < 8; k++) { let fk = f32(k); let an = fk * 2.39996 + r; a += textureSampleCompareLevel(tSh, sS, s.xy + vec2f(cos(an), sin(an)) * sqrt((fk + .5) / 8.) * e, s.z); }
+  return mix(1., a / 8., nearK(p));
 }
 // r = openness, g = skylight; outside the near field everything is open sky
 fn vol(p: vec3f) -> vec2f {
@@ -363,16 +364,16 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
   let bfade = 1. - ss(.2, .5, fwidth(fv / .3) + fwidth(fu / .6));
   if (mat <= 1) {
     let lava = mix(fm.r, nm.g, nk); let gran = mix(fm.g, nm.b, nk); let wadi = nm.r * nk; let irr = nm.a * nk; let city = fm.b * (1. - nk);
-    let ctr = select(mix(.45, 1., max(nm.r, nm.g) * nk), .55, far);
+    let ctr = select(mix(.6, 1., max(nm.r, nm.g) * nk), .55, far);
     alb = mix(vec3f(.50, .34, .20), vec3f(.62, .45, .28), sat(A.c * .9 + Lg.a * .9 - .55)) * mix(.93, .7 + .45 * mix(B.h, Lg.b, .45), ctr) * mix(.98, .84 + .32 * C.c, ctr);
     alb *= mix(vec3f(.92, .95, 1.), vec3f(1.07, 1., .9), Mg.a);
     alb *= mix(vec3f(1.), vec3f(1.06, .95, .82), ss(.4, .7, Lg.a));
     alb = mix(alb, vec3f(.36, .26, .18) * (.8 + .4 * C.h), ss(.55, .75, B.c) * .35);
-    alb = mix(alb, vec3f(.52, .41, .28) * (.86 + .25 * B.h), wadi);
+    alb = mix(alb, vec3f(.57, .47, .33) * (.86 + .25 * B.h), wadi);
     alb = mix(alb, mix(vec3f(.21, .14, .085), vec3f(.12, .15, .055), ss(.35, .65, B.c)), irr * .85);
     // the mosque courtyard: trodden earth strewn with small pebbles
     let peb = ss(.6, .8, C.c) * fk;
-    alb = mix(alb, mix(vec3f(.43, .31, .20), vec3f(.52, .40, .27), A.c) * (.9 + .15 * Lg.b) * (1. - .12 * peb) + vec3f(.03, .025, .02) * ss(.75, .9, C.h) * fk, court * .97);
+    alb = mix(alb, mix(vec3f(.50, .39, .27), vec3f(.60, .48, .34), A.c) * (.9 + .15 * Lg.b) * (1. - .12 * peb) + vec3f(.03, .025, .02) * ss(.75, .9, C.h) * fk, court * .97);
     let bas = mix(vec3f(.028, .029, .031), vec3f(.06, .057, .055), ss(.45, .8, C.c)) * (.6 + .8 * mix(.5, F.h * C.h, fk));
     let lv = max(lava, ss(.04, .25, lava));
     alb = mix(alb, mix(bas, vec3f(.40, .30, .20) * (.8 + .3 * B.h), flt * ss(.68, .9, Lg.a + .3 * B.c) * .5), lv);
@@ -382,7 +383,7 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
     alb = mix(alb, gra, sat(gran * 1.4) * (1. - .1 * flt));
     alb = mix(alb, vec3f(.52, .41, .29) * (.88 + .18 * C.c), ss(.05, .4, city) * .5);
     alb = mix(alb, mix(mix(vec3f(.05, .048, .047), vec3f(.10, .09, .085), A.h) * (.75 + .5 * B.c), vec3f(.36, .27, .18), ss(.65, .85, B.c) * .3), lava * (1. - nk) * .9 * (1. - .45 * ss(1500., 6000., dist)));
-    let fam = mix(.22, .45, max(wadi, lava));
+    let fam = mix(.32, .45, max(wadi, lava));
     alb *= mix(1., 1. - fam * .5 + fam * F.h, fk);
     bump = select(mix(.3, mix(.9, 1.2, lava), max(wadi, lava)), .55, far) * (1. - .9 * court); gloss = mix(.03, .16, lava * (1. - flt)) * ss(120., 20., dist);
   } else if (mat == 2) {
@@ -391,14 +392,14 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
   } else if (mat == 3) {
     alb = mix(vec3f(.22, .17, .14), vec3f(.33, .26, .21), C.c) * (.65 + .55 * B.h); bump = 1.2;
   } else if (mat == 4) {
-    alb = mix(vec3f(.54, .45, .36), vec3f(.44, .36, .29), hs(sd * 91.)) * (.75 + .4 * B.h); bump = .6; gloss = .12;
+    alb = mix(vec3f(.42, .35, .28), vec3f(.33, .27, .21), hs(sd * 91.)) * (.75 + .4 * B.h); bump = .6; gloss = .05;
   } else if (mat == 5) {
     // mud brick: courses of sun-dried bricks, rendered and eroded, darker at the foot
     let row = floor(fv / .34); let bx = fract(fu / .7 + row * .5); let by = fract(fv / .34);
     let mortar = (1. - ss(.0, .1, by) * ss(1., .9, by)) * .6 + (1. - ss(.0, .07, bx) * ss(1., .93, bx)) * .5;
     let render = ss(.55, .7, C.c + .2 * B.h);
     alb = mix(vec3f(.47, .32, .19), vec3f(.39, .26, .15), hs(row * 7.1 + floor(fu / .7 + row * .5)) * .6) * (.8 + .35 * C.h);
-    alb = mix(alb * (1. - .75 * mortar * (1. - render) * bfade) * (.85 + .3 * hs(row * 3.3 + floor(fu / .7 + row * .5) * 1.7)), vec3f(.56, .41, .28) * (.75 + .4 * B.h), render * .12);
+    alb = mix(alb * (1. - .45 * mortar * (1. - render) * bfade) * (.92 + .16 * F.h) * (.85 + .3 * hs(row * 3.3 + floor(fu / .7 + row * .5) * 1.7)), vec3f(.56, .41, .28) * (.75 + .4 * B.h), render * .12);
     alb *= mix(.7, 1., ss(0., .6, fv)); bump = .22;
   } else if (mat == 6) {
     // the mosque walls: mud brick under a worn mud render, on a footing of rough stones
@@ -407,7 +408,7 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
     var br = mix(vec3f(.50, .35, .21), vec3f(.42, .28, .16), hs(row * 7.1 + bxi) * .8) * (.85 + .3 * C.h);
     br *= 1. - .45 * mort * bfade;
     let render = ss(.42, .58, A.c + .35 * B.h - .15 * ss(.5, 3.5, fv));
-    alb = mix(br, vec3f(.55, .41, .27) * (.84 + .28 * B.h) * (.92 + .1 * C.c), render * .85);
+    alb = mix(br, vec3f(.61, .47, .32) * (.84 + .28 * B.h) * (.92 + .1 * C.c), render * .85);
     let srow = floor(fv / .27); let sx = fu / (.42 + .25 * hs(srow * 3.7)) + hs(srow) * 7.;
     let stn = mix(vec3f(.15, .13, .11), vec3f(.33, .28, .22), hs(floor(sx) * 1.3 + srow * 17.)) * (.7 + .5 * F.h);
     let sj = (1. - ss(.0, .1, fract(sx)) * ss(1., .9, fract(sx))) + (1. - ss(.0, .14, fract(fv / .27)) * ss(1., .86, fract(fv / .27)));
@@ -434,7 +435,7 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
       let win = step(abs(fract(fu / 2.6 + hh * 3.) - .5) * 2.6, .2) * step(abs(fv - 2.35), .18) * step(.55, hs(wc * 7.3 + sd * 11.)) * wall * (1. - door);
       alb = mix(alb, vec3f(.13, .085, .05), win * wfade);
     }
-    alb = mix(alb, vec3f(.42, .31, .20) * (.85 + .3 * B.h), ss(.6, .9, on.y));
+    alb = mix(alb, vec3f(.36, .27, .18) * (.85 + .3 * B.h), ss(.6, .9, on.y));
     alb *= select(1., .32, mat == 17);
     bump = .1;
   } else if (mat == 8) {
@@ -457,7 +458,8 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
     let rib = 1. - ss(.03, .07, abs(fx));
     let ftone = mix(vec3f(.42, .31, .15), vec3f(.58, .45, .24), hs(fi * 3.1 + floor(i.op.z * .7)));
     let under = mix(mix(ftone * .62, ftone, leaflet * mix(.5, 1., bfade)), ftone * .85, rib * bfade) * (.85 + .25 * C.h);
-    let edge = mix(vec3f(.33, .24, .12), vec3f(.50, .37, .19), hs(floor(fu * 9.) * 1.7)) * (.6 + .4 * ss(.0, .3, fract(fu * 9.))) * (.8 + .3 * F.h);
+    let eu = fu * 7. + 2.5 * sin(fu * 1.7) + 1.5 * sin(fu * 4.1);
+    let edge = mix(vec3f(.36, .26, .13), vec3f(.48, .36, .19), hs(floor(eu) * 1.7)) * (.82 + .18 * ss(.0, .4, fract(eu))) * (.8 + .3 * F.h);
     alb = select(edge, under, on.y < -.5);
     // a few gaps in the thatch where the sky glows through
     let gc = vec2f(i.op.x * 2.6, i.op.z * 1.4); let gid = hs(floor(gc.x) * 7.1 + floor(gc.y) * 3.3 + 1.7);
@@ -470,6 +472,12 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
     let k1 = abs(fract(i.op.y * 3.3 + ang * 8.) - .5); let k2 = abs(fract(i.op.y * 3.3 - ang * 8.) - .5);
     let grv = 1. - ss(.03, .2, min(k1, k2));
     alb = mix(vec3f(.34, .25, .16), vec3f(.24, .17, .11), B.c) * (1. - .3 * grv * f32(mat != 18)) * (.88 + .24 * C.h);
+    if (mat == 19) {
+      let cid = hs(floor(i.wp.x / 3.6 + .5) * 7.3 + floor(i.wp.z / 3.6 + .5) * 3.1);
+      let ring = ss(.0, .1, abs(fract(i.op.y * 2.6 + .25 * sin(ang * TAU * 3. + cid * 20.)) - .5) - .36);
+      let fib = ss(.3, .7, fract(ang * 90. + .5 * sin(i.op.y * 3. + cid * 9.)));
+      alb = mix(vec3f(.40, .30, .19), vec3f(.30, .22, .14), cid) * (1. - .12 * fib * bfade) * (1. - .3 * ring * bfade) * (.82 + .36 * C.h);
+    }
     vao = mix(select(.55, .82, mat == 19), 1., ss(0., 2., i.op.y - sd * 37.)); bump = .8;
   } else if (mat == 13) {
     alb = mix(vec3f(.38, .15, .04), vec3f(.24, .08, .03), hs(sd * 17.)) * (.8 + .3 * C.h); gloss = .35; bump = .6;
@@ -488,8 +496,8 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
     return fin(aerial(c, i.wp));
   }
   let lvN = select(0., max(nm.g * nk, fm.r * (1. - nk)), mat <= 1);
-  let onT = normalize(mix(on, vec3f(0., 1., 0.), select(0., max(court * .85, flt * (1. - max(nm.r, nm.g) * nk) * .5 * nk), mat <= 1)));
-  let N = normalize(qrot(i.q, normalize(onT + (A.n * .8 * (1. - lvN * .8) + B.n * .6 * (1. - lvN * .5) + C.n * (.4 + lvN) * ss(70., 10., dist) + F.n * (select(.5, .12, mat <= 1) + lvN) * fk) * bump)));
+  let onT = normalize(mix(on, vec3f(0., 1., 0.), select(0., max(court * .85, flt * (1. - max(nm.r, nm.g) * nk) * .3 * nk), mat <= 1)));
+  let N = normalize(qrot(i.q, normalize(onT + (A.n * .8 * (1. - lvN * .8) + B.n * .6 * (1. - lvN * .5) + C.n * (.4 + lvN * .5) * ss(45., 8., dist) + F.n * (select(.5, .12, mat <= 1) + lvN * .6) * fk) * bump)));
   let L = g.sun.xyz; let V = normalize(g.cam.xyz - i.wp);
   let vv = vol(i.wp + n0 * 1.2); let v2 = vol(i.wp + n0 * 4.);
   var ao = (sat((vv.x - .5) * 6.) * .5 + sat((v2.x - .5) * 2.5) * .5) * vao * mix(1., i.ao, f32(mat == 1));
@@ -539,12 +547,12 @@ fn grassSway(p: vec2f, h: f32, t: f32) -> vec2f {
   var col = vec3f(0.); var pr = vec4f(0.); var shp = 0.; var fold = 0.;
   let palm = ty == 0 || ty == 1 || ty == 5;
   switch ty {
-    case 0 { col = mix(vec3f(.09, .14, .035), vec3f(.18, .20, .055), s1); pr = vec4f(1., .55, 0., 0.); fold = .5; }
+    case 0 { col = mix(vec3f(.065, .10, .035), vec3f(.13, .15, .05), s1); pr = vec4f(1., .55, 0., 0.); fold = .5; }
     case 1 { col = mix(vec3f(.20, .14, .075), vec3f(.28, .20, .10), s1); pr = vec4f(1., .3, 0., 0.); fold = .3; }
     case 2 { col = mix(vec3f(.24, .27, .08), vec3f(.42, .38, .14), s1); pr = vec4f(0., .8, 0., 0.); }
     case 3 { col = mix(vec3f(.20, .21, .14), vec3f(.28, .23, .13), s1); pr = vec4f(0., .4, 0., 0.); }
-    case 4 { col = mix(vec3f(.12, .16, .06), vec3f(.18, .20, .08), s1); pr = vec4f(0., .6, 0., 0.); }
-    default { col = mix(vec3f(.09, .12, .04), vec3f(.15, .16, .05), s1); pr = vec4f(0., .6, 0., 0.); }
+    case 4 { col = mix(vec3f(.12, .13, .07), vec3f(.17, .17, .09), s1); pr = vec4f(0., .6, 0., 0.); }
+    default { col = mix(vec3f(.07, .09, .035), vec3f(.11, .12, .045), s1); pr = vec4f(0., .6, 0., 0.); }
   }
   // fronds droop along a circular arc and flutter; grass and shrubs bend and sway from the root
   let fl = sin(t * (1.7 + s1) + s2 * 40. + hA * .3) * select(.12, .2, palm);
@@ -587,10 +595,10 @@ fn leafCov(i: LO) -> f32 {
   var n = normalize(i.n); if (!ff) { n = -n; }
   let V = normalize(g.cam.xyz - i.wp); let L = g.sun.xyz;
   let vv = vol(i.wp + vec3f(0., .5, 0.));
-  let E = SUNC * mix(shadow1(i.wp + L * .6), 1., .3);
+  let E = SUNC * mix(shadow1(i.wp + L * .6), 1., .12);
   let ndl = dot(n, L);
   var alb = i.col * (.7 + .3 * ss(0., .3, abs(i.uv.x))) * mix(.75, 1.1, i.uv.y) * (.6 + .8 * lt.b) * (.75 + .5 * lt.a);
-  let tr = (max(-ndl, 0.) * .9 + .25) * i.pr.y;
+  let tr = (max(-ndl, 0.) * 1.1 + .06) * i.pr.y;
   let trc = alb * vec3f(1.2, 1.25, .55);
   let aov = sat((vv.x - .5) * 5.);
   let am = (amb(n, vv.y) + amb(-n, vv.y) * i.pr.y * .45) * (.35 + .65 * aov);
