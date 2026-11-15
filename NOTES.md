@@ -5,12 +5,18 @@ Built with the `worldsmith` skill (`/home/moey/.shared/skills/worldsmith`), star
 
 ## State (update after every step)
 
-- Phase: 5 (critic loop). Critic rounds used: 2 of 6 (iter-03 major, iter-07 major); round 3 runs on iter-09.
-- Last good capture: verify/iter-09 (dev.html, 2560x1440, 0 console errors)
-- Perf (iter-09, RTX 3070 possibly shared with other renders, 60 s flight): GPU avg 6.27, p99 6.71, max 6.92 ms -> passes
-- Next step: critic on iter-09, fix top majors, capture iter-10; then index.html at High and Low, README, screenshots
-- Watchdog: none (subagent run without CronCreate); whoever resumes reads this block
-- Commits: d70d791 (iterations 00-07), then iterations 08-09
+- Phase: 7 (delivered). Stopping rule reached: 6 critic rounds used (iter-03, 07, 09, 11, 14, 15); the last verdict
+  is still "major" (verify/final/critic.md). Not passed; stopped by the round limit, as the brief says.
+- Last good capture: verify/iter-15 (dev.html), verify/final-min-high and verify/final-min-low (index.html at High and
+  at Low via --storage madinahFY=2): 0 console errors on all three.
+- Perf (iter-15, RTX 3070, 2560x1440, 60 s flight; other worlds may have been rendering on the same GPU):
+  GPU avg 6.17 ms, p99 6.70, max 7.04 -> passes the 11 ms target. Frame line is vsync-locked headless (16.67).
+- index.html: 97.4 kB (99,762 bytes), 39.7 kB gzipped. Load to menu about 3 s headless.
+- Watchdog: none (subagent run without CronCreate).
+- Open items from the last critic: the mosque is not legible from the air, lava reads brown and its lobe edge
+  looks cut out, the wadi glitters, the hall columns and thatch read as manufactured, far groves still read as a
+  planted pattern, posterised shadow edges at the low sun, tiny window openings. Not done: touch controls and the
+  Medium level were not re-tested; Low shows a few floating grass blades in pose 1.
 
 ## What is reasonably known, and what is a guess
 
@@ -115,3 +121,13 @@ minarets or domes, nothing modern.
 - iter-07 critic (major): mosque unreadable from above, far palm rows, Sal' with palms, lava speckle, hall tunnel, white
   wadi, frond aliasing. Fixed: warmer hall (0.75 bounce), jittered far groves, Sal' palm-free, calmer lava/wadi detail,
   fewer wider leaflets, litter on open ground, Uhud 1.2x taller.
+- iter-09 critic (major): toothpick far palms, detached fronds, lava slab, carport hall, mosque unreadable from above.
+  Fixed: patchy far groves, tapered 12-sided columns, pose clearances, warmer sky ambient, darker hall roof.
+- iter-11 critic (major): acid-green fronds, hall, linoleum lanes, lava speckle, mosque contrast. Fixed: olive fronds
+  with real backlight, rotated-disk shadow filter, trimmed-trunk bark, lanes between smooth and rippled.
+- iter-14 critic (major): detached fronds at pose 1, hall, posterised shadows, lava decal edge, far sticks.
+  Fixed: 15 m palm clearance at pose 1, dark lava rims, calmer basalt, darker far trunks, warm bounce in shade.
+- iter-15 critic (major, round 6 of 6): stop. Verdict and top items in verify/final/critic.md.
+- Critic notes contradicted each other on the ground (beach sand at round 1, a listed strength at rounds 2-6); the
+  rippled sand was kept as the critics' repeated strength.
+

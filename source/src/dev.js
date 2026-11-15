@@ -40,5 +40,3 @@
   });
 }
 if (location.hash === '#capture') dynT = -Infinity;
-window.__dbg = () => { const o = []; for (const [i, j] of [[511, 256], [500, 256], [480, 100], [256, 0], [256, 10], [300, 0]]) { const x = OX + i, z = OZ + j; o.push([x, z, NEAR.A[(i + NX * j) * 4].toFixed(2), fh(x, z).toFixed(2), NEAR.A[(i + NX * j) * 4 + 1].toFixed(2)]); } return JSON.stringify(o); };
-window.__ev = (s) => eval(s);
