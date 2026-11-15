@@ -5,12 +5,12 @@ Built with the `worldsmith` skill (`/home/moey/.shared/skills/worldsmith`), star
 
 ## State (update after every step)
 
-- Phase: 1-3, building the world from the madinah-horizon source.
-- Last good capture: none yet
-- Perf: not measured yet
-- Critic: not run yet
-- Next step: finish world.js / shaders.js adaptation, first capture (verify/iter-01)
-- Watchdog: none (this run is a subagent without CronCreate; whoever resumes reads this block)
+- Phase: 5 (critic loop). Critic rounds used: 2 of 6 (iter-03 major, iter-07 major); round 3 runs on iter-09.
+- Last good capture: verify/iter-09 (dev.html, 2560x1440, 0 console errors)
+- Perf (iter-09, RTX 3070 possibly shared with other renders, 60 s flight): GPU avg 6.27, p99 6.71, max 6.92 ms -> passes
+- Next step: critic on iter-09, fix top majors, capture iter-10; then index.html at High and Low, README, screenshots
+- Watchdog: none (subagent run without CronCreate); whoever resumes reads this block
+- Commits: d70d791 (iterations 00-07), then iterations 08-09
 
 ## What is reasonably known, and what is a guess
 
@@ -106,3 +106,12 @@ minarets or domes, nothing modern.
 - Audio: wind bed with gusts, frond rustle, dove coos, small-bird chirps, a soft drone. Nothing recited.
 
 ## Iteration log
+
+- iter-00..02 (self-review): buildings read as rock (bump too high), courtyard dune texture, lava slab at the near-field edge,
+  pose 2 moved into the colonnade, far palms capped by scan order.
+- iter-03 critic (major): hall dark, zebra columns, lava slab and bald dome, rectangular oasis edge, frond aliasing,
+  beach-sand lanes, bare cube houses. Fixed: bark from normals, frond thatch, warm bounce, lava as an irregular lobe inside
+  the near field, grove ring outside it, parapets/beam ends/door frames, well at the ditch head.
+- iter-07 critic (major): mosque unreadable from above, far palm rows, Sal' with palms, lava speckle, hall tunnel, white
+  wadi, frond aliasing. Fixed: warmer hall (0.75 bounce), jittered far groves, Sal' palm-free, calmer lava/wadi detail,
+  fewer wider leaflets, litter on open ground, Uhud 1.2x taller.

@@ -143,10 +143,11 @@ fn massif(p: vec2f, c: vec2f, ang: f32, L: f32, W: f32) -> f32 {
   let oasis = ss(3300., 1900., length((p2 - vec2f(-150., 600.)) * vec2f(1., .62)));
   var settle = ss(.6, .72, fbm(vec3f(x * .0032, 21., z * .0032), 2)) * oasis * (1. - lava) * (1. - gran) * (1. - wadi * .9) * outNear;
   settle = max(settle, ss(110., 50., distance(p2, vec2f(${QB}))) * .7 * outNear);
-  var palms = ss(.44, .56, fbm(vec3f(x * .0016, 11., z * .0016), 3)) * oasis;
+  // groves in patches over the oasis core, open sand between them
+  var palms = ss(.56, .6, fbm(vec3f(x * .0035, 11., z * .0035), 3)) * ss(2700., 1500., length((p2 - vec2f(-100., 400.)) * vec2f(1., .8)));
   palms = max(palms, ss(.55, .7, fbm(vec3f(x * .003, 13., z * .003), 2)) * .3 * ss(4500., 3000., r));
   // a dense ring of groves just outside the walkable land hides where its detailed ground ends
-  palms = max(palms, ss(760., 420., max(abs(x), abs(z))) * (.75 + .25 * fbm(vec3f(x * .02, 25., z * .02), 2)));
+  palms = max(palms, ss(560., 360., max(abs(x), abs(z))) * ss(.3, .45, fbm(vec3f(x * .012, 25., z * .012), 2)));
   palms *= (1. - lava) * (1. - gran) * outNear * (1. - ss(.3, .6, settle));
   A[id.x + u.n.x * id.y] = vec4f(h, lava, gran, wadi);
   B[id.x + u.n.x * id.y] = vec4f(settle, palms, 0., 0.);
@@ -300,7 +301,7 @@ fn vol(p: vec3f) -> vec2f {
 }
 fn amb(n: vec3f, sky: f32) -> vec3f {
   let up = n.y * .5 + .5;
-  return (mix(ZEN, vec3f(.42, .34, .30), .48) * 1.1 * up * up + vec3f(.70, .47, .29) * .48 * (1. - up) + vec3f(.12, .085, .06)) * (.3 + .7 * sky);
+  return (mix(ZEN, vec3f(.46, .36, .30), .62) * 1.1 * up * up + vec3f(.70, .47, .29) * .48 * (1. - up) + vec3f(.12, .085, .06)) * (.3 + .7 * sky);
 }
 fn aerial(c: vec3f, wp: vec3f) -> vec3f { return aerialAt(c, g.cam.xyz, wp, g.sun.xyz); }
 `;
@@ -374,7 +375,7 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
     alb = mix(alb, mix(vec3f(.43, .31, .20), vec3f(.52, .40, .27), A.c) * (.9 + .15 * Lg.b) * (1. - .12 * peb) + vec3f(.03, .025, .02) * ss(.75, .9, C.h) * fk, court * .97);
     let bas = mix(vec3f(.028, .029, .031), vec3f(.06, .057, .055), ss(.45, .8, C.c)) * (.6 + .8 * mix(.5, F.h * C.h, fk));
     let lv = max(lava, ss(.04, .25, lava));
-    alb = mix(alb, mix(bas, vec3f(.40, .30, .20) * (.8 + .3 * B.h), flt * ss(.78, .95, Lg.a + .3 * B.c) * .25), lv);
+    alb = mix(alb, mix(bas, vec3f(.40, .30, .20) * (.8 + .3 * B.h), flt * ss(.68, .9, Lg.a + .3 * B.c) * .5), lv);
     var gra = select(mix(vec3f(.24, .18, .15), vec3f(.34, .26, .21), A.c), mix(vec3f(.46, .19, .10), vec3f(.62, .31, .17), A.c), far) * (.68 + .55 * B.h);
     gra = mix(gra, vec3f(.16, .11, .09), ss(.5, .75, fract(i.wp.y * .11 + A.h * 1.5)) * select(.45, 0., far));
     gra = mix(gra, gra * vec3f(.55, .5, .5), ss(.55, .8, B.c) * f32(far) * .5);
@@ -431,10 +432,10 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
       alb = mix(alb, alb * .5, (step(abs(fu - dx), .7) - step(abs(fu - dx), .55)) * step(fv, 2.12) * step(.7, on.z) * wall * wfade);
       let wc = floor(fu / 2.6 + hh * 3.);
       let win = step(abs(fract(fu / 2.6 + hh * 3.) - .5) * 2.6, .2) * step(abs(fv - 2.35), .18) * step(.55, hs(wc * 7.3 + sd * 11.)) * wall * (1. - door);
-      alb = mix(alb, vec3f(.05, .04, .035), win * wfade);
+      alb = mix(alb, vec3f(.13, .085, .05), win * wfade);
     }
-    alb = mix(alb, vec3f(.45, .34, .23) * (.85 + .3 * B.h), ss(.6, .9, on.y));
-    alb *= select(1., .42, mat == 17);
+    alb = mix(alb, vec3f(.42, .31, .20) * (.85 + .3 * B.h), ss(.6, .9, on.y));
+    alb *= select(1., .32, mat == 17);
     bump = .1;
   } else if (mat == 8) {
     // utum and well heads: coursed rough stone, dark basalt mixed with brown, in mud mortar; a few slits high up
@@ -458,7 +459,10 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
     let under = mix(mix(ftone * .62, ftone, leaflet * mix(.5, 1., bfade)), ftone * .85, rib * bfade) * (.85 + .25 * C.h);
     let edge = mix(vec3f(.33, .24, .12), vec3f(.50, .37, .19), hs(floor(fu * 9.) * 1.7)) * (.6 + .4 * ss(.0, .3, fract(fu * 9.))) * (.8 + .3 * F.h);
     alb = select(edge, under, on.y < -.5);
-    alb = mix(alb, mix(vec3f(.36, .27, .17), ftone * .72, .3 + .5 * leaflet) * (.85 + .3 * B.h), ss(.5, .8, on.y));
+    // a few gaps in the thatch where the sky glows through
+    let gc = vec2f(i.op.x * 2.6, i.op.z * 1.4); let gid = hs(floor(gc.x) * 7.1 + floor(gc.y) * 3.3 + 1.7);
+    emi = vec3f(.5, .36, .2) * step(.985, gid) * (1. - ss(.05, .4, length(fract(gc) - .5))) * f32(on.y < -.5) * bfade * .25;
+    alb = mix(alb, mix(vec3f(.22, .17, .10), ftone * .5, .3 + .5 * leaflet) * (.85 + .3 * B.h), ss(.5, .8, on.y));
     bump = .3;
   } else if (mat == 12 || mat == 18 || mat == 19) {
     // date palm trunk: spiral of cut leaf bases makes a diamond crosshatch

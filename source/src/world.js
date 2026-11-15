@@ -19,7 +19,7 @@ const POSES = [
   [-8, 1.7, 36, -1, 2.4, -45, 0],
   [-21, 1.7, -24, 24, 1.6, -31, 0],
   [-45, 1.7, -35, -112, 8, -125, 0],
-  [138, 1.7, 30, -150, 32, -900, 0],
+  [138, 1.7, 30, -300, 30, -700, 0],
   [-160, 1.7, 130, -110, 62, -400, 0],
   [70, 92, 120, -40, 0, -160, 1],
 ];
@@ -158,7 +158,7 @@ function meshMosqueWalls(L) {
 function meshMosqueTimber() {
   rseed(400);
   const m = new Mesh();
-  const col = (x, z, h) => m.tube([[x, -.25, z], [x + rr(-.04, .04), h * .5, z + rr(-.04, .04)], [x + rr(-.07, .07), h, z + rr(-.07, .07)]], (k) => [.24, .21, .19][k], 8, false, (k) => [.55, .8, 1][k]);
+  const col = (x, z, h) => { const lx = rr(-.06, .06), lz = rr(-.06, .06), s = rr(.9, 1.1); m.tube([[x, -.25, z], [x, .25, z], [x + lx * .5, h * .5, z + lz * .5], [x + lx, h, z + lz]], (k) => [.3, .25, .21, .18][k] * s, 12, false, (k) => [.55, .7, .85, 1][k]); };
   const log = (x0, z0, x1, z1, y, r) => m.tube([[x0, y, z0], [(x0 + x1) / 2, y - r * .3, (z0 + z1) / 2], [x1, y, z1]], r, 6, false, () => .8);
   for (const z of [21.4, 17.8, 14.2]) { for (let x = -21.6; x <= 21.7; x += 3.6) col(x, z, 3.36); log(-MW + .3, z, MW - .3, z, 3.34, .17); }
   for (let x = -24; x <= 24.1; x += 1.6) log(x, 13.1, x, MW - .3, 3.47, .065);
@@ -391,7 +391,7 @@ function makeWorld(D, T, NA, FAR, flyPts) {
     if (!young && H > 6.5) for (let k = 3 + (rnd() * 3 | 0); k > 0; k--) { const a = rnd() * TAU; solid(3, cx + cos(a) * .55, cy - .75 - rnd() * .3, cz + sin(a) * .55, rr(.2, .27), yawQ(rnd() * TAU), 13, rnd(), 80, H); }
     shadeSky(cx - 2.5, cz - 2.5, cx + 2.5, cz + 2.5, cy, .22 / 3);
   };
-  const okPalm = (x, z, m = 4) => !(nearFly(x, z, 7) || nearPose(x, z, 3.5) || hypot(x - POSES[0][0], z - POSES[0][2]) < 7 || blocked(x, z, m) || WELLS.some((w) => hypot(x - w[0], z - w[1]) < 4));
+  const okPalm = (x, z, m = 4) => !(nearFly(x, z, 7) || nearPose(x, z, 7) || hypot(x - POSES[0][0], z - POSES[0][2]) < 7 || blocked(x, z, m) || WELLS.some((w) => hypot(x - w[0], z - w[1]) < 4));
   rseed(1);
   for (const p of PLOTS) {
     const sp = rr(6.5, 9), jx = rr(0, sp), jz = rr(0, sp), old = rr(.6, 1);
@@ -473,7 +473,7 @@ function makeWorld(D, T, NA, FAR, flyPts) {
   rseed(5);
   for (let gz = -3300; gz < 3600; gz += 21) for (let gx = -3300; gx < 3300; gx += 21) {
     const x = gx + rr(-6, 6), z = gz + rr(-6, 6), c = farB(x, z, 0);
-    if (c < .05 || rnd() > c * .32 || max(abs(x), abs(z)) < 262 || hypot(x - QB[0], z - QB[1]) < 50) continue;
+    if (c < .05 || rnd() > c * .2 || max(abs(x), abs(z)) < 262 || hypot(x - QB[0], z - QB[1]) < 50) continue;
     const t = rnd() < .03 ? 5 : (rnd() * 5) | 0, sc = rr(.85, 1.15), ang = floor(rnd() * 4) * PI / 2 + rr(-.08, .08);
     solid(26 + t, x, fh(x, z) - .3, z, sc, yawQ(ang), t === 5 ? 8 : 17, rnd(), 0, 1);
   }
@@ -486,12 +486,12 @@ function makeWorld(D, T, NA, FAR, flyPts) {
     for (let f = 0; f < n; f++) farL.push(x + top[0], y + top[1] + .2, z + top[2], rr(4, 5.2), off + f * 2.39996, mix(.4, 1.9, f / n), 1.5, H, 5, rnd(), rnd(), .55);
   };
   const cand = [];
-  for (let gz = -3200; gz < 3400; gz += 13) for (let gx = -3000; gx < 2800; gx += 13) {
-    const x = gx + rr(-6.5, 6.5), z = gz + rr(-6.5, 6.5);
+  for (let gz = -2800; gz < 3200; gz += 10) for (let gx = -2800; gx < 2600; gx += 10) {
+    const x = gx + rr(-5, 5), z = gz + rr(-5, 5);
     if (max(abs(x), abs(z)) < 258 || abs(x - QB[0]) < 26 && abs(z - QB[1]) < 26) continue;
-    if (rnd() < farB(x, z, 1) * .95) cand.push(x, z);
+    if (farB(x, z, 1) > .5 && rnd() < .9) cand.push(x, z);
   }
-  const keepP = min(1, 32000 * 2 / cand.length);
+  const keepP = min(1, 36000 * 2 / cand.length);
   for (let i = 0; i < cand.length; i += 2) if (rnd() < keepP) farTrunk(cand[i], cand[i + 1], rr(7, 15));
 
   // --- wadi: acacias, cobbles, sand-loving shrubs
@@ -579,7 +579,7 @@ function makeWorld(D, T, NA, FAR, flyPts) {
     const lava = nearA(x, z, 1), gr = nearA(x, z, 2);
     const q = qRand();
     if (lava > .1 && rnd() < (sstep(.5, .95, lava) * .9 + (lava < .5 ? .35 : 0)) * (1 - sstep(200, 246, max(abs(x), abs(z))))) {
-      const sc = (.2 + 1.4 * pow(rnd(), 3) + (rnd() < .04 && !nearPose(x, z, 12) ? rr(1.2, 2.6) : 0)) * (ny > .8 ? .75 : 1), bigR = sc > 1;
+      const sc = (.2 + 1.4 * pow(rnd(), 3) + (rnd() < .04 && !nearPose(x, z, 22) ? rr(1.2, 2.6) : 0)) * (ny > .8 ? .75 : 1), bigR = sc > 1;
       solid(bigR ? 5 : 4, x - T.wn[k] * sc * .3, y - ny * sc * .3, z - T.wn[k + 2] * sc * .3, sc, q, 2, rnd(), bigR ? 0 : 110, 0);
     } else if (gr > .3 && rnd() < gr * .25) {
       const sc = .3 + 1.3 * pow(rnd(), 2);
