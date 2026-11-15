@@ -474,9 +474,9 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
     alb = mix(vec3f(.34, .25, .16), vec3f(.24, .17, .11), B.c) * (1. - .3 * grv * f32(mat != 18)) * (.88 + .24 * C.h);
     if (mat == 19) {
       let cid = hs(floor(i.wp.x / 3.6 + .5) * 7.3 + floor(i.wp.z / 3.6 + .5) * 3.1);
-      let ring = ss(.0, .1, abs(fract(i.op.y * 2.6 + .25 * sin(ang * TAU * 3. + cid * 20.)) - .5) - .36);
+      let ry = i.op.y * 2.6 + cid * 5.; let ring = ss(.0, .08, abs(fract(ry + .06 * cos(ang * TAU + hs(floor(ry)) * 6.)) - .5) - .38) * (.5 + .5 * hs(floor(ry) * 1.9 + cid));
       let fib = ss(.3, .7, fract(ang * 90. + .5 * sin(i.op.y * 3. + cid * 9.)));
-      alb = mix(vec3f(.40, .30, .19), vec3f(.30, .22, .14), cid) * (1. - .12 * fib * bfade) * (1. - .3 * ring * bfade) * (.82 + .36 * C.h);
+      alb = mix(vec3f(.40, .30, .19), vec3f(.30, .22, .14), cid) * (1. - .12 * fib * bfade) * (1. - .25 * ring * bfade) * (.82 + .36 * C.h);
     }
     vao = mix(select(.55, .82, mat == 19), 1., ss(0., 2., i.op.y - sd * 37.)); bump = .8;
   } else if (mat == 13) {
