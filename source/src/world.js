@@ -391,7 +391,7 @@ function makeWorld(D, T, NA, FAR, flyPts) {
     if (!young && H > 6.5) for (let k = 3 + (rnd() * 3 | 0); k > 0; k--) { const a = rnd() * TAU; solid(3, cx + cos(a) * .55, cy - .75 - rnd() * .3, cz + sin(a) * .55, rr(.2, .27), yawQ(rnd() * TAU), 13, rnd(), 80, H); }
     shadeSky(cx - 2.5, cz - 2.5, cx + 2.5, cz + 2.5, cy, .22 / 3);
   };
-  const okPalm = (x, z, m = 4) => !(nearFly(x, z, 7) || nearPose(x, z, 7) || hypot(x - POSES[0][0], z - POSES[0][2]) < 7 || blocked(x, z, m) || WELLS.some((w) => hypot(x - w[0], z - w[1]) < 4));
+  const okPalm = (x, z, m = 4) => !(nearFly(x, z, 7) || nearPose(x, z, 7) || hypot(x - POSES[0][0], z - POSES[0][2]) < 15 || blocked(x, z, m) || WELLS.some((w) => hypot(x - w[0], z - w[1]) < 4));
   rseed(1);
   for (const p of PLOTS) {
     const sp = rr(6.5, 9), jx = rr(0, sp), jz = rr(0, sp), old = rr(.6, 1);
@@ -483,7 +483,7 @@ function makeWorld(D, T, NA, FAR, flyPts) {
     const y = fh(x, z) - .3, s = H / 10, yaw = rnd() * TAU, q = yawQ(yaw), top = qrot3(q, [.3 * s, 10 * s, 0]);
     solid(8, x, y, z, s, q, 18, rnd(), 0, 0);
     const off = rnd() * TAU, n = LV > 1 ? 7 : 10;
-    for (let f = 0; f < n; f++) farL.push(x + top[0], y + top[1] + .2, z + top[2], rr(4, 5.2), off + f * 2.39996, mix(.4, 1.9, f / n), 1.5, H, 5, rnd(), rnd(), .55);
+    for (let f = 0; f < n; f++) farL.push(x + top[0], y + top[1] + .2, z + top[2], rr(4, 5.2), off + f * 2.39996, mix(.4, 1.9, f / n), 2, H, 5, rnd(), rnd(), .55);
   };
   const cand = [];
   for (let gz = -2800; gz < 3200; gz += 10) for (let gx = -2800; gx < 2600; gx += 10) {

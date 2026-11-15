@@ -369,13 +369,13 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
     alb *= mix(vec3f(.92, .95, 1.), vec3f(1.07, 1., .9), Mg.a);
     alb *= mix(vec3f(1.), vec3f(1.06, .95, .82), ss(.4, .7, Lg.a));
     alb = mix(alb, vec3f(.36, .26, .18) * (.8 + .4 * C.h), ss(.55, .75, B.c) * .35);
-    alb = mix(alb, vec3f(.57, .47, .33) * (.86 + .25 * B.h), wadi);
+    alb = mix(alb, vec3f(.50, .44, .35) * (.86 + .25 * B.h), wadi);
     alb = mix(alb, mix(vec3f(.21, .14, .085), vec3f(.12, .15, .055), ss(.35, .65, B.c)), irr * .85);
     // the mosque courtyard: trodden earth strewn with small pebbles
     let peb = ss(.6, .8, C.c) * fk;
-    alb = mix(alb, mix(vec3f(.50, .39, .27), vec3f(.60, .48, .34), A.c) * (.9 + .15 * Lg.b) * (1. - .12 * peb) + vec3f(.03, .025, .02) * ss(.75, .9, C.h) * fk, court * .97);
-    let bas = mix(vec3f(.028, .029, .031), vec3f(.06, .057, .055), ss(.45, .8, C.c)) * (.6 + .8 * mix(.5, F.h * C.h, fk));
-    let lv = max(lava, ss(.04, .25, lava));
+    alb = mix(alb, mix(vec3f(.46, .36, .25), vec3f(.55, .44, .31), A.c) * (.9 + .15 * Lg.b) * (1. - .12 * peb) + vec3f(.03, .025, .02) * ss(.75, .9, C.h) * fk, court * .97);
+    let bas = mix(vec3f(.026, .027, .03), vec3f(.055, .052, .05), ss(.45, .8, C.c)) * (.75 + .5 * mix(.5, F.h * C.h, fk));
+    let lv = max(lava, ss(.01, .14, lava));
     alb = mix(alb, mix(bas, vec3f(.40, .30, .20) * (.8 + .3 * B.h), flt * ss(.68, .9, Lg.a + .3 * B.c) * .5), lv);
     var gra = select(mix(vec3f(.24, .18, .15), vec3f(.34, .26, .21), A.c), mix(vec3f(.46, .19, .10), vec3f(.62, .31, .17), A.c), far) * (.68 + .55 * B.h);
     gra = mix(gra, vec3f(.16, .11, .09), ss(.5, .75, fract(i.wp.y * .11 + A.h * 1.5)) * select(.45, 0., far));
@@ -385,7 +385,7 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
     alb = mix(alb, mix(mix(vec3f(.05, .048, .047), vec3f(.10, .09, .085), A.h) * (.75 + .5 * B.c), vec3f(.36, .27, .18), ss(.65, .85, B.c) * .3), lava * (1. - nk) * .9 * (1. - .45 * ss(1500., 6000., dist)));
     let fam = mix(.32, .45, max(wadi, lava));
     alb *= mix(1., 1. - fam * .5 + fam * F.h, fk);
-    bump = select(mix(.3, mix(.9, 1.2, lava), max(wadi, lava)), .55, far) * (1. - .9 * court); gloss = mix(.03, .16, lava * (1. - flt)) * ss(120., 20., dist);
+    bump = select(mix(.3, mix(.7, .9, lava), max(wadi, lava)), max(.55, lava * 1.3), far) * (1. - .9 * court); gloss = mix(.03, .16, lava * (1. - flt)) * ss(120., 20., dist);
   } else if (mat == 2) {
     alb = mix(vec3f(.026, .027, .029), vec3f(.055, .05, .047), ss(.45, .75, C.c)) * (.6 + .8 * F.h);
     alb = mix(alb, vec3f(.40, .28, .17), flt * ss(.75, .95, B.c) * .2); bump = 1.5; gloss = .1;
@@ -479,6 +479,7 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
       alb = mix(vec3f(.40, .30, .19), vec3f(.30, .22, .14), cid) * (1. - .12 * fib * bfade) * (1. - .25 * ring * bfade) * (.82 + .36 * C.h);
     }
     vao = mix(select(.55, .82, mat == 19), 1., ss(0., 2., i.op.y - sd * 37.)); bump = .8;
+    alb *= select(1., .55, mat == 18);
   } else if (mat == 13) {
     alb = mix(vec3f(.38, .15, .04), vec3f(.24, .08, .03), hs(sd * 17.)) * (.8 + .3 * C.h); gloss = .35; bump = .6;
   } else if (mat == 14) {
@@ -516,6 +517,7 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
   let am = amb(N, vv.y) * ao;
   var c = alb * (E * ndl + am) + emi;
   c += alb * vec3f(.62, .40, .22) * .75 * sat(hall + suf);
+  c += alb * vec3f(.50, .32, .18) * .22 * (1. - sh) * flt * nk * f32(mat <= 1);
   let Hh = normalize(V + L);
   let spc = mix(vec3f(.04), alb, metal);
   c += E * spc * pow(sat(dot(N, Hh)), mix(8., 120., gloss)) * gloss * ndl * 4.;
