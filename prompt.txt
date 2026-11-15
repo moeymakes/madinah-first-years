@@ -1,0 +1,54 @@
+Build a real-time, painterly-realistic scene of the oasis of Madinah (Yathrib) in the time of the Prophet ﷺ,
+about 622-632 CE, at golden hour, that runs in the browser. It only needs to look beautiful and let me walk
+(and, with a key, fly) through it. It is an artistic reconstruction, not an exact one.
+
+PRIORITIES (in this order when they conflict)
+1. Visual quality
+2. Stable frame pacing at the target spec
+3. Small bundle size
+
+CONSTRAINTS
+- No Three.js/Babylon.js or other engines. WebGPU rendered.
+- Everything procedural: no texture/model/audio files. Deliverable is a single self-contained index.html.
+  Report minified size. Zero per-frame JS allocations; preallocate all buffers.
+- Sacred and historical limits: no human figures at all; no depiction of the Prophet ﷺ, his family, the
+  Companions or any person; no animals that would suggest people (a few birds are fine). No interiors of the
+  Prophet's ﷺ rooms, no graves. No synthesized adhan, no Qur'an recitation, no scripture text in the world.
+  Nothing modern anywhere in view. No minarets, domes or later symbols on the first mosque.
+- Geography is composed and compressed, not to scale; every uncertain detail is an informed artistic guess
+  and is marked as such in NOTES.md.
+
+TARGET
+- Omarchy Linux, Chrome 157, RTX 3070, 60 Hz+ monitor
+- 2560x1440 at full resolution. GPU frame time <= 11 ms average, p99 <= 16 ms during a scripted 60 s
+  fly-through.
+
+SCENE
+- The first mosque: a square enclosure of mud-brick walls on a stone footing, palm-trunk columns carrying a
+  roof of palm stalks, fronds and mud over the qibla (south) side, an open earth-and-pebble courtyard, the
+  shaded Suffah at the back (north), gates on the north, east and west. The rooms of the Prophet's ﷺ
+  household adjoin its east side, shown only as plain closed exteriors.
+- The oasis: dense date-palm groves in mud-brick garden walls, wells with wooden frames, earthen irrigation
+  ditches, scattered settlements of flat-roofed mud-brick houses with palm-trunk beam ends, fortified stone
+  tower-houses (utum), lanes of packed earth
+- Landforms: the black basalt of the harrat to the east and south (and west, far), the sandy bed of Wadi
+  al-Aqiq with acacias, a low rocky hill, Jabal Sal' close to the north-west, Mount Uhud as a long red granite
+  massif on the northern horizon, Jabal Ayr low and dark to the south
+- Light: low western sun, long shadows, warm haze turning grey-blue with distance, thin high cloud, sun shafts
+  through palm fronds and dust
+- Life: a few doves circling, small birds heard in the groves, dust motes drifting in the light
+- A small, simple early mosque at Quba to the south, among palms
+- World: bounded, but the boundaries can't be visible from the starting area
+
+CONTROLS
+WASD walk, mouse look (pointer lock), Shift to run, F toggles flight (then Q/E down/up), 1-6 viewpoints
+
+VERIFICATION
+- Visual critic: a separate subagent that sees ONLY the renders, never the code or reasoning. Six fixed camera
+  poses at 2560x1440 in GPU-accelerated Chrome, plus frames from the scripted fly-through. It returns
+  prioritized, concrete defects. Iterate until it reports nothing above "minor" (at most 6 critic rounds).
+- Performance: GPU timestamp queries plus a frame-time log from the scripted fly-through. Report average,
+  99th percentile and max.
+
+DONE WHEN: both verification gates pass (or 6 critic rounds are spent). Deliver index.html, the bundle size,
+the perf report and the critic's final review.

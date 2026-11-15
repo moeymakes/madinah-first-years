@@ -1,0 +1,8 @@
+node_modules/
+verify/*/*
+!verify/*/critic.md
+!verify/*/perf.txt
+!verify/final/
+.chrome-profile/
+dev.html
+publish/

@@ -1,0 +1,16 @@
+{
+  "name": "madinah-first-years",
+  "private": true,
+  "description": "A walkable procedural reconstruction of the oasis of Madinah and the first mosque (7th century), rendered with WebGPU, bundled into one HTML file",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "build:readable": "node build.mjs --readable",
+    "build:dev": "node build.mjs --dev",
+    "capture": "node tools/capture.mjs ../dev.html --out ../verify/latest --size 2560x1440"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "playwright-core": "1.49.1"
+  }
+}
