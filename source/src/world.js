@@ -359,7 +359,7 @@ function makeWorld(D, T, NA, FAR, flyPts) {
     if (blocked(x + x0, z + z0, 2.4) || blocked(x + x1, z + z1, 2.4) || blocked(x + (x0 + x1) / 2, z + (z0 + z1) / 2, 2.4 + max(x1 - x0, z1 - z0) / 2)) return false;
     for (const [px, pz] of [[x0, z0], [x1, z0], [x0, z1], [x1, z1], [(x0 + x1) / 2, (z0 + z1) / 2]]) {
       const X = x + px, Z = z + pz;
-      if (lane3(X, Z) < 3.5 || nearPose(X, Z, 7) || nearFly(X, Z, 6, 15) || inPlot(X, Z, -3) || nearA(X, Z, 1) > .05 || nearA(X, Z, 3) > .15 || nearA(X, Z, 2) > .2 || max(abs(X), abs(Z)) > 236) return false;
+      if (lane3(X, Z) < 3.5 || nearPose(X, Z, 9) || nearFly(X, Z, 6, 15) || inPlot(X, Z, -3) || nearA(X, Z, 1) > .05 || nearA(X, Z, 3) > .15 || nearA(X, Z, 2) > .2 || max(abs(X), abs(Z)) > 236) return false;
     }
     solid(14 + k, x, y, z, sc, yawQ(-quarter * PI / 2 + rr(-.02, .02)), 7, rnd(), 0, 1);
     coll.push(x + x0, z + z0, x + x1, z + z1, y + h * sc + .3); foot.push(x + x0, z + z0, x + x1, z + z1);
@@ -391,7 +391,7 @@ function makeWorld(D, T, NA, FAR, flyPts) {
     if (!young && H > 6.5) for (let k = 3 + (rnd() * 3 | 0); k > 0; k--) { const a = rnd() * TAU; solid(3, cx + cos(a) * .55, cy - .75 - rnd() * .3, cz + sin(a) * .55, rr(.2, .27), yawQ(rnd() * TAU), 13, rnd(), 80, H); }
     shadeSky(cx - 2.5, cz - 2.5, cx + 2.5, cz + 2.5, cy, .22 / 3);
   };
-  const okPalm = (x, z, m = 4) => !(nearFly(x, z, 4.5) || nearPose(x, z, 3.5) || hypot(x - POSES[0][0], z - POSES[0][2]) < 7 || blocked(x, z, m) || WELLS.some((w) => hypot(x - w[0], z - w[1]) < 4));
+  const okPalm = (x, z, m = 4) => !(nearFly(x, z, 7) || nearPose(x, z, 3.5) || hypot(x - POSES[0][0], z - POSES[0][2]) < 7 || blocked(x, z, m) || WELLS.some((w) => hypot(x - w[0], z - w[1]) < 4));
   rseed(1);
   for (const p of PLOTS) {
     const sp = rr(6.5, 9), jx = rr(0, sp), jz = rr(0, sp), old = rr(.6, 1);
@@ -487,7 +487,7 @@ function makeWorld(D, T, NA, FAR, flyPts) {
   };
   const cand = [];
   for (let gz = -3200; gz < 3400; gz += 13) for (let gx = -3000; gx < 2800; gx += 13) {
-    const x = gx + rr(-4, 4), z = gz + rr(-4, 4);
+    const x = gx + rr(-6.5, 6.5), z = gz + rr(-6.5, 6.5);
     if (max(abs(x), abs(z)) < 258 || abs(x - QB[0]) < 26 && abs(z - QB[1]) < 26) continue;
     if (rnd() < farB(x, z, 1) * .95) cand.push(x, z);
   }
@@ -560,6 +560,17 @@ function makeWorld(D, T, NA, FAR, flyPts) {
     leaf(big, x, gy(x, z) + .08, z, rr(2.2, 3.4), rnd() * TAU, PI / 2 - rr(0, .12), .42, 0, 1, rnd(), rnd(), .2);
   }
 
+  // --- litter on the open ground: fallen fronds and stones, a few thorny tufts by the wadi viewpoint
+  rseed(16);
+  for (let i = 0; i < 1400; i++) {
+    const x = rr(-240, 240), z = rr(-240, 240);
+    if (inPlot(x, z, -1) || blocked(x, z, 1) || nearA(x, z, 1) > .1 || nearPose(x, z, 1.5) || (abs(x - MQ[0]) < MW + 1 && abs(z - MQ[1]) < MW + 1)) continue;
+    const y = gy(x, z);
+    if (rnd() < .3) leaf(big, x, y + .06, z, rr(1.8, 3.2), rnd() * TAU, PI / 2 - rr(0, .1), .4, 0, 1, rnd(), rnd(), .2);
+    else for (let k = 0; k < 4; k++) { const sc = .06 + .16 * pow(rnd(), 2), px = x + rr(-.8, .8), pz = z + rr(-.8, .8); if (!(nth++ % THIN)) solid(7, px, y - sc * .2, pz, sc, qRand(), 4, rnd(), 45, 0); }
+  }
+  for (const [f, r] of [[3.5, 2.2], [4.5, -3.8], [8, 5.5], [6, -1.4]]) { const p = rel(4, f, r); shrub(p[0], p[1], 22, 1.1); }
+
   // --- rocks: basalt rubble at the lava front, granite boulders on the hill, cobbles
   rseed(12);
   for (let i = 0; i < 70000; i++) {
@@ -568,7 +579,7 @@ function makeWorld(D, T, NA, FAR, flyPts) {
     const lava = nearA(x, z, 1), gr = nearA(x, z, 2);
     const q = qRand();
     if (lava > .1 && rnd() < (sstep(.5, .95, lava) * .9 + (lava < .5 ? .35 : 0)) * (1 - sstep(200, 246, max(abs(x), abs(z))))) {
-      const sc = (.2 + 1.4 * pow(rnd(), 3) + (rnd() < .04 ? rr(1.2, 2.6) : 0)) * (ny > .8 ? .75 : 1), bigR = sc > 1;
+      const sc = (.2 + 1.4 * pow(rnd(), 3) + (rnd() < .04 && !nearPose(x, z, 12) ? rr(1.2, 2.6) : 0)) * (ny > .8 ? .75 : 1), bigR = sc > 1;
       solid(bigR ? 5 : 4, x - T.wn[k] * sc * .3, y - ny * sc * .3, z - T.wn[k + 2] * sc * .3, sc, q, 2, rnd(), bigR ? 0 : 110, 0);
     } else if (gr > .3 && rnd() < gr * .25) {
       const sc = .3 + 1.3 * pow(rnd(), 2);
