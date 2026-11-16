@@ -6,7 +6,7 @@
 // itself (heights and masks) is W_GROUND in shaders.js.
 
 // sun 9 degrees up in the west-south-west: facing north it lights things from the left
-const SUN = (() => { const v = [-.93, .158, .37]; const l = hypot(...v); return v.map((c) => c / l); })();
+const SUN = (() => { const v = TP.sun; const l = hypot(...v); return v.map((c) => c / l); })();
 // far houses (w, h, d, roof room); index 5 is a far utum
 const FARH = [[8, 3.2, 9, 0], [10, 3.4, 8, 1], [7, 3, 7, 0], [12, 3.6, 10, 1], [9, 5.8, 9, 0], [8.5, 11, 8.5, 0]];
 const NSOLID = 26 + FARH.length;

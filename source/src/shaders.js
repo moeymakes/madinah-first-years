@@ -226,8 +226,10 @@ fn kar(c: vec3f) -> vec4f { let w = 1. / (1. + max(c.r, max(c.g, c.b))); return 
 // ---------------------------------------------------------------- shared: uniforms, sky, air
 const S_G = /*wgsl*/`
 struct G { vp: mat4x4f, sm: mat4x4f, cam: vec4f, right: vec4f, up: vec4f, fwd: vec4f, sun: vec4f, res: vec4f, mis: vec4f };
-const SUNC = vec3f(2.9, 2.1, 1.35);
-const ZEN = vec3f(.10, .24, .58);
+const SUNC = vec3f(${TP.sunc.join(', ')});
+const ZEN = vec3f(${TP.zen.join(', ')});
+const COOLH = vec3f(${TP.cool.join(', ')}); const WARMH = vec3f(${TP.warm.join(', ')}); const BAND = vec3f(${TP.band.join(', ')}); const FARBLUE = vec3f(${TP.farblue.join(', ')}); const AMBC = vec3f(${TP.ambc.join(', ')}); const CLOUDC = vec3f(${TP.cloud.join(', ')});
+const GND = ${TP.gnd}; const NIGHT = ${TP.night}.;
 const HOR = vec3f(.98, .66, .42);
 const BETA = vec3f(.75e-4, .9e-4, 1.15e-4);
 const HSCALE = 300.;
@@ -245,11 +247,11 @@ fn skyCol(rd: vec3f, sun: vec3f) -> vec3f {
   let h = vec2f(rd.x, rd.z); let hl = max(length(h), 1e-4);
   let tw = .5 + .5 * dot(h / hl, normalize(sun.xz));
   let mu = dot(rd, sun);
-  let hor = mix(vec3f(.74, .68, .66), vec3f(1.35, .84, .44), tw * tw);
+  let hor = mix(COOLH, WARMH, tw * tw);
   var c = mix(hor, ZEN, pow(y, .5));
-  c += vec3f(1., .5, .2) * .35 * pow(sat(1. - y * 4.), 3.) * tw * tw * tw;
+  c += BAND * .35 * pow(sat(1. - y * 4.), 3.) * mix(tw * tw * tw, .5 + .5 * tw, NIGHT);
   c += SUNC * (.04 * pow(max(mu, 0.), 5.) + .12 * pow(max(mu, 0.), 40.) + .3 * pow(max(mu, 0.), 500.));
-  return mix(c, mix(vec3f(.46, .46, .5), vec3f(1., .66, .4), tw), sat(-rd.y * 5.));
+  return mix(c, mix(vec3f(.46, .46, .5), vec3f(1., .66, .4), tw) * GND, sat(-rd.y * 5.));
 }
 // aerial perspective: exponential-height haze integrated in closed form along the view ray; distant things
 // fade to the sky's horizon colour in their direction (warm toward the sun, cool away from it)
@@ -260,7 +262,7 @@ fn aerialAt(c: vec3f, cam: vec3f, wp: vec3f, sun: vec3f) -> vec3f {
   let k2 = rd.y / 70.;
   let od2 = select((1. - exp(-k2 * d)) / k2, d, abs(k2) < 1e-7) * exp(-max(cam.y, -30.) / 70.);
   let T = exp(-BETA * od - vec3f(1.5e-4, 1.6e-4, 1.75e-4) * od2);
-  let ins = mix(skyCol(normalize(vec3f(rd.x, max(rd.y, 0.) * .3 + .012, rd.z)), sun), vec3f(.56, .64, .80), ss(900., 6000., d) * .55);
+  let ins = mix(skyCol(normalize(vec3f(rd.x, max(rd.y, 0.) * .3 + .012, rd.z)), sun), FARBLUE, ss(900., 6000., d) * .55);
   return c * T + ins * (1. - T);
 }
 fn qrot(q: vec4f, v: vec3f) -> vec3f { return v + 2. * cross(q.xyz, cross(q.xyz, v) + q.w * v); }
@@ -302,7 +304,7 @@ fn vol(p: vec3f) -> vec2f {
 }
 fn amb(n: vec3f, sky: f32) -> vec3f {
   let up = n.y * .5 + .5;
-  return (mix(ZEN, vec3f(.46, .36, .30), .62) * 1.1 * up * up + vec3f(.70, .47, .29) * .48 * (1. - up) + vec3f(.12, .085, .06)) * (.3 + .7 * sky);
+  return AMBC * (mix(ZEN, vec3f(.46, .36, .30), .62) * 1.1 * up * up + vec3f(.70, .47, .29) * .48 * (1. - up) + vec3f(.12, .085, .06)) * (.3 + .7 * sky);
 }
 fn aerial(c: vec3f, wp: vec3f) -> vec3f { return aerialAt(c, g.cam.xyz, wp, g.sun.xyz); }
 `;
@@ -447,6 +449,7 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
     alb = mix(alb, vec3f(.42, .32, .22) * (.85 + .3 * B.h), sat(sj) * .75 * bfade);
     let slit = step(abs(fract(fu / 3.2) - .5) * 3.2, .14) * step(abs(fract((fv - 4.) / 3.4) - .5) * 3.4, .5) * step(3.5, fv) * step(fv, 10.) * wall;
     alb = mix(alb, vec3f(.02, .018, .016), slit * wfade);
+    emi = vec3f(1., .55, .22) * 1.2 * slit * wfade * NIGHT * step(.6, hs(floor(fu / 3.2) * 5.3 + floor((fv - 4.) / 3.4) * 2.9 + sd * 11.));
     alb = mix(alb, vec3f(.38, .30, .22) * (.85 + .3 * B.h), ss(.6, .9, on.y));
     bump = .3;
   } else if (mat == 9) {
@@ -463,7 +466,7 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
     alb = select(edge, under, on.y < -.5);
     // a few gaps in the thatch where the sky glows through
     let gc = vec2f(i.op.x * 2.6, i.op.z * 1.4); let gid = hs(floor(gc.x) * 7.1 + floor(gc.y) * 3.3 + 1.7);
-    emi = vec3f(.5, .36, .2) * step(.985, gid) * (1. - ss(.05, .4, length(fract(gc) - .5))) * f32(on.y < -.5) * bfade * .25;
+    emi = vec3f(.5, .36, .2) * step(.985, gid) * (1. - ss(.05, .4, length(fract(gc) - .5))) * f32(on.y < -.5) * bfade * .25 * (1. - NIGHT);
     alb = mix(alb, mix(vec3f(.22, .17, .10), ftone * .5, .3 + .5 * leaflet) * (.85 + .3 * B.h), ss(.5, .8, on.y));
     bump = .3;
   } else if (mat == 12 || mat == 18 || mat == 19) {
@@ -516,8 +519,8 @@ fn tri(p: vec3f, n: vec3f, s: f32) -> TP {
   let ndl = sat(dot(N, L));
   let am = amb(N, vv.y) * ao;
   var c = alb * (E * ndl + am) + emi;
-  c += alb * vec3f(.62, .40, .22) * .75 * sat(hall + suf);
-  c += alb * vec3f(.50, .32, .18) * .22 * (1. - sh) * flt * nk * f32(mat <= 1);
+  c += alb * vec3f(.62, .40, .22) * mix(.75, .3, NIGHT) * sat(hall + suf);
+  c += alb * vec3f(.50, .32, .18) * .22 * (1. - NIGHT) * (1. - sh) * flt * nk * f32(mat <= 1);
   let Hh = normalize(V + L);
   let spc = mix(vec3f(.04), alb, metal);
   c += E * spc * pow(sat(dot(N, Hh)), mix(8., 120., gloss)) * gloss * ndl * 4.;
@@ -664,10 +667,15 @@ struct VO { @builtin(position) cp: vec4f, @location(0) d: vec3f };
     let r = vec2f(q.x * .96 + q.y * .28, q.y * .96 - q.x * .28) * vec2f(.00011, .00042) + vec2f(g.cam.w * .002, 0.);
     let n = fbm(vec3f(r, 1.3), 5) + .35 * (fbm(vec3f(r * 3.1, 4.1), 3) - .5);
     let cov = ss(.58, .84, n) * ss(.03, .2, rd.y) * (1. - ss(.35, .9, rd.y));
-    let lit = mix(vec3f(1.2, .74, .52), vec3f(2.4, 1.3, .62), pow(max(mu, 0.), 3.)) * (.75 + .5 * fbm(vec3f(r * 7., 2.), 2));
+    let lit = mix(CLOUDC, CLOUDC * vec3f(2., 1.75, 1.2), pow(max(mu, 0.), 3.)) * (.75 + .5 * fbm(vec3f(r * 7., 2.), 2));
     c = mix(c, lit, cov * .5);
   }
-  c += SUNC * 9. * ss(.99988, .99994, mu);
+  c += mix(SUNC * 9., vec3f(2.4, 2.4, 2.2), NIGHT) * ss(mix(.99988, .99975, NIGHT), mix(.99994, .99982, NIGHT), mu);
+  // stars: one soft point per sky cell, a pixel or two wide, so they hold still as the camera moves
+  if (NIGHT > .5 && rd.y > 0.) {
+    let p = rd * 230.; let h = h33(floor(p)); let off = fract(p) - .5 - (h - .5) * .5;
+    c += vec3f(.85, .9, 1.) * step(.982, h.z) * ss(.14, .0, length(off)) * (.4 + 1.6 * h.x * h.x) * ss(.02, .2, rd.y) * 2.;
+  }
   return fin(c);
 }
 `;
