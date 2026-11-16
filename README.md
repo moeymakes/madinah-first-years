@@ -1,5 +1,9 @@
 # Madinah, First Years
 
+### ▶ [Play it in your browser](https://moeymakes.github.io/madinah-first-years/)
+
+Chrome or Edge on a desktop or laptop (it needs WebGPU). Nothing to install.
+
 **Walk through the oasis of Madinah as it may have looked around 622-632 CE, in the low evening light, right in your browser.**
 
 Date-palm groves inside mud-brick garden walls, wells and earthen ditches, flat-roofed houses and square stone
@@ -28,8 +32,8 @@ only as plain closed walls. Nothing is recited, and there is no text from script
 
 ## Try it
 
-1. Download [`index.html`](index.html).
-2. Open it in **Chrome** or **Edge** on a desktop computer.
+1. Open **[https://moeymakes.github.io/madinah-first-years/](https://moeymakes.github.io/madinah-first-years/)** in **Chrome** or **Edge** on a desktop computer, or download
+   [`index.html`](index.html) and open it from your computer (it works offline).
 3. Wait a few seconds while the land is built, then press **Enter** and start walking.
 
 It works offline. It needs a browser with **WebGPU**.
@@ -98,6 +102,11 @@ cd source && npm install && npm run build
 | [`source/template.html`](source/template.html) | The page: loading bar, menu, controls list |
 
 `npm run build:dev` writes `dev.html` with a scripted one-minute flight (`P`) and a benchmark (`B`).
+
+## Other worlds in this series
+
+- **[Madinah Horizon](https://moeymakes.github.io/madinah-horizon/)**: the date gardens, lava fields and hills around Madinah at golden hour, with the Prophet's Mosque and Uhud on the horizon ([source](https://github.com/moeymakes/madinah-horizon))
+- **[Nabawi Courtyard](https://moeymakes.github.io/masjid-nabawi-courtyard/)**: the marble plaza of the Prophet's Mosque up close, as the great umbrellas open ([source](https://github.com/moeymakes/masjid-nabawi-courtyard))
 
 ## License
 
