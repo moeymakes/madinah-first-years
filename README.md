@@ -1,8 +1,10 @@
 # Madinah, First Years
 
-### ▶ [Play it in your browser](https://moeymakes.github.io/madinah-first-years/)
-
-Chrome or Edge on a desktop or laptop (it needs WebGPU). Nothing to install.
+<p align="center">
+  <a href="https://moeymakes.github.io/madinah-first-years/"><img src=".github/play.svg" alt="Play it in your browser" width="420"></a>
+</p>
+<p align="center"><b><a href="https://moeymakes.github.io/madinah-first-years/">moeymakes.github.io/madinah-first-years/</a></b><br>
+<sub>Chrome or Edge on a desktop or laptop (needs WebGPU) · nothing to install · one HTML file</sub></p>
 
 **Walk through the oasis of Madinah as it may have looked around 622-632 CE, in the low evening light, right in your browser.**
 
@@ -21,7 +23,7 @@ guesses, are listed in [NOTES.md](NOTES.md).
 There are no people in the scene and no animals except a few birds. The rooms of the Prophet's ﷺ household are shown
 only as plain closed walls. Nothing is recited, and there is no text from scripture anywhere in the world.
 
-![A lane between walled date gardens, a well and a ditch, and the qibla wall of the mosque with Uhud beyond](.github/screenshots/lane-to-the-mosque.jpg)
+[![A lane between walled date gardens, a well and a ditch, and the qibla wall of the mosque with Uhud beyond](.github/screenshots/lane-to-the-mosque.jpg)](https://moeymakes.github.io/madinah-first-years/)
 
 | | |
 |---|---|
