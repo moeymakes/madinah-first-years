@@ -603,10 +603,14 @@ fn room(e: vec2f, d0: vec3f, o: vec2f, fl: f32, lit: vec3f, lamp: f32) -> vec3f 
     // the mosque courtyard: trodden earth strewn with small pebbles
     let peb = ss(.58, .8, C.c * .6 + B.c * .25 + F.h * .15) * fk;
     let pq = i.wp.xz * 11.; let pc = floor(pq); let ph = hs(pc.x * 1.7 + pc.y * 31.3);
-    let pebS = (1. - ss(.18, .32, length(fract(pq) - .5 - (vec2f(hs(ph * 9.), hs(ph * 13.)) - .5) * .4))) * step(.72, ph) * pfade;
+    let pebS = (1. - ss(.18, .32, length(fract(pq) - .5 - (vec2f(hs(ph * 9.), hs(ph * 13.)) - .5) * .4))) * step(.8, ph) * ss(.4, .7, B.c * .7 + C.c * .3) * pfade;
     let mqf = i.wp.xz - vec2f(${MQ[0]}., ${MQ[1]}.);
     let rows = ss(.25, .0, abs(fract(mqf.y / 1.15) - .5) - .22) * step(13.2, mqf.y) * step(abs(mqf.x), 24.) * (.5 + .5 * B.h);
-    alb = mix(alb, mix(vec3f(.40, .30, .20), vec3f(.48, .37, .25), A.c) * (.9 + .15 * Lg.b) * (1. - .22 * peb) * (1. - .1 * rows) * mix(1., mix(.62, 1.25, hs(ph * 5.)), pebS) + vec3f(.05, .04, .03) * ss(.7, .9, C.h) * fk, court * .97);
+    // trodden darker round each trunk's foot, where the hall's own shade and the shadow map are too coarse to reach
+    let cg = vec2f(mqf.x - (-21.35 + 6.1 * clamp(round((mqf.x + 21.35) / 6.1), 0., 7.)), mqf.y - (14.2 + 3.6 * clamp(round((mqf.y - 14.2) / 3.6), 0., 2.)));
+    let sg = vec2f(mqf.x - (-22.9 + 4.5 * clamp(round((mqf.x + 22.9) / 4.5), 0., 3.)), mqf.y + 21.2);
+    let foot = 1. - .38 * (1. - ss(.25, 1.2, min(length(cg), length(sg))));
+    alb = mix(alb, mix(vec3f(.40, .30, .20), vec3f(.48, .37, .25), A.c) * foot * (.9 + .15 * Lg.b) * (1. - .22 * peb) * (1. - .1 * rows) * mix(1., mix(.72, 1.15, hs(ph * 5.)), pebS) + vec3f(.05, .04, .03) * ss(.7, .9, C.h) * fk, court * .97);
     // harrat basalt is grey-black (albedo about .06-.11), not brown: windblown dust settles only in the flat hollows
     let bas = mix(vec3f(.056, .059, .066), vec3f(.096, .097, .10), ss(.4, .8, C.c)) * (.8 + .4 * mix(.5, F.h * C.h, fk));
     // the flow front's rising edge is basalt too, or it shows as a pale sand lip round the lobe
@@ -736,8 +740,8 @@ fn room(e: vec2f, d0: vec3f, o: vec2f, fl: f32, lit: vec3f, lamp: f32) -> vec3f 
     let fronds = mix(mix(mix(ftone * .8, ftone, leaflet * mix(.5, 1., bfade)), ftone * .88, rib * bfade), vec3f(.20, .15, .10), gap * bfade * .6);
     let sz2 = i.op.z * 13. + .5 * sin(i.op.x * .6 + crs * 3.); let sid = floor(sz2); let sf = fract(sz2) - .5;
     let stk = mix(vec3f(.46, .35, .21), vec3f(.60, .48, .31), hs(sid * 1.3 + floor(i.op.x / 3.)));
-    let stalks = mix(stk * .8, mix(stk * (.72 + .4 * (1. - 4. * sf * sf)), vec3f(.13, .10, .07), ss(.36, .5, abs(sf)) * .8), bfade);
-    let fpat = ss(.6, .85, hs(crs * 7.3 + floor(i.op.x / 2.3 + .4 * sin(i.op.z * 1.3)) * 3.1) * .75 + .25 * C.c) * .8;
+    let stalks = mix(stk * .8, mix(stk * (.8 + .25 * (1. - 4. * sf * sf)), vec3f(.13, .10, .07), ss(.4, .5, abs(sf)) * .5), bfade);
+    let fpat = ss(.25, .55, hs(crs * 7.3 + floor(i.op.x / 2.3 + .4 * sin(i.op.z * 1.3)) * 3.1) * .75 + .25 * C.c) * .9;
     let under = mix(stalks, fronds, fpat) * (.8 + .3 * C.h);
     let eu = fu * 7. + 2.5 * sin(fu * 1.7) + 1.5 * sin(fu * 4.1);
     let edge = mix(vec3f(.36, .26, .13), vec3f(.48, .36, .19), hs(floor(eu) * 1.7)) * (.82 + .18 * ss(.0, .4, fract(eu))) * (.8 + .3 * F.h);
@@ -761,7 +765,7 @@ fn room(e: vec2f, d0: vec3f, o: vec2f, fl: f32, lit: vec3f, lamp: f32) -> vec3f 
       let fib = ss(.3, .7, fract(ang * 90. + .5 * sin(i.op.y * 3. + cid * 9.)));
       let stub = fract(ry + .06 * cos(ang * TAU + hs(floor(ry)) * 6.));
       alb = mix(vec3f(.40, .30, .19), vec3f(.30, .22, .14), cid) * (1. - .07 * fib * bfade * ss(.3, .7, C.c)) * (1. - .2 * ring * bfade) * (.78 + .44 * C.h);
-      alb *= mix(1., .62 + .5 * ss(0., .5 + .45 * hs(floor(ry) * 5.1 + cid), stub), bfade * (.25 + .75 * hs(floor(ry) * 3.7 + cid)));
+      alb *= mix(1., .75 + .32 * ss(0., .5 + .45 * hs(floor(ry) * 5.1 + cid), stub), bfade * (.15 + .6 * hs(floor(ry) * 3.7 + cid)));
       alb *= mix(vec3f(.72, .66, .6), vec3f(1.), ss(.2, 1.4, i.op.y)) * mix(1., 1.12, ss(2., 3.2, i.op.y) * hs(cid * 7.));
     }
     vao = mix(select(.55, .82, mat == 19), 1., ss(0., 2., i.op.y - sd * 37.)); bump = .8;
@@ -799,7 +803,11 @@ fn room(e: vec2f, d0: vec3f, o: vec2f, fl: f32, lit: vec3f, lamp: f32) -> vec3f 
   let hall = (1. - ss(24.3, 25., abs(mq.x))) * ss(12.6, 16., mq.z) * (1. - ss(25.1, 25.5, mq.z)) * (1. - ss(3.1, 3.38, mq.y));
   let suf = (1. - ss(-4., -3., mq.x)) * step(-25.5, mq.x) * (1. - ss(-21.5, -19.6, mq.z)) * step(-25.5, mq.z) * (1. - ss(2.7, 3.05, mq.y));
   ao *= 1. - .62 * sat(hall + suf);
-  let sh = select(shadow9(i.wp + n0 * (.45 + dist * .003) + g.sun.xyz * .25), sat(i.ao * 1.6 - .3) * shadowC(i.wp + n0 * 1.5 + g.sun.xyz), far);
+  // timber tucked against the underside of the hall and Suffah roofs: the shadow map cannot resolve the slab's shadow
+  // on joists touching it, which leaked sun along every joist as a hot rim line
+  let tuck = f32(mat == 19 || mat == 9) * (1. - ss(24.6, 25.2, abs(mq.x))) * max(ss(13.4, 14., mq.z) * step(2.95, mq.y) * step(mq.y, 3.65) * (1. - ss(24.9, 25.4, mq.z)),
+    (1. - ss(-3.9, -3.4, mq.x)) * (1. - ss(-20.6, -20.1, mq.z)) * step(2.6, mq.y) * step(mq.y, 3.3));
+  let sh = select(shadow9(i.wp + n0 * (.45 + dist * .003) + g.sun.xyz * .25), sat(i.ao * 1.6 - .3) * shadowC(i.wp + n0 * 1.5 + g.sun.xyz), far) * (1. - tuck);
   let E = SUNC * sh;
   let ndl = sat(dot(N, L));
   let am = amb(N, vv.y) * ao;

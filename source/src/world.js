@@ -160,26 +160,66 @@ function meshMosqueWalls(L) {
 function meshMosqueTimber() {
   rseed(400);
   const m = new Mesh();
-  // whole trunks are never straight or alike: each leans, bows a little at mid-height and has its own girth
-  const col = (x, z, h) => { const lx = rr(-.12, .12), lz = rr(-.1, .1), s = rr(.85, 1.2), bx = rr(-.06, .06), bz = rr(-.06, .06); m.tube([[x, -.25, z], [x, .25, z], [x + lx * .45 + bx, h * .5, z + lz * .45 + bz], [x + lx, h, z + lz]], (k) => [.3, .25, .21, .18][k] * s, 12, false, (k) => [.55, .7, .85, 1][k]); };
-  const log = (x0, z0, x1, z1, y, r) => m.tube([[x0, y, z0], [(x0 + x1) / 2, y - r * .3, (z0 + z1) / 2], [x1, y, z1]], r, 6, false, () => .8);
-  // three porticoes of eight trunks each (6.1 m bays), a trunk beam along each row, stalk joists across
-  for (const z of [21.4, 17.8, 14.2]) { for (let k = 0; k < 8; k++) col(-21.35 + k * 6.1 + rr(-.25, .25), z + rr(-.15, .15), 3.36); log(-MW + .3, z, MW - .3, z, 3.34, .19); }
-  for (let x = -24; x <= 24.1; x += 1.6) log(x + rr(-.15, .15), 13.1, x + rr(-.15, .15), MW - .3, 3.45, rr(.075, .1));
+  // a whole stripped trunk: leans and bows, flares into a root boss, its girth swells and narrows along its length,
+  // and the stubs of old leaf bases roughen its outline (a smooth tube read as a concrete pipe)
+  const col = (x, z, h) => {
+    const lx = rr(-.12, .12), lz = rr(-.1, .1), s = rr(.85, 1.15), bx = rr(-.07, .07), bz = rr(-.07, .07), ph = rr(0, 9), id = rr(0, 1e4) | 0, NS = 14, NR = 18, rings = [];
+    for (let r = 0; r <= NR; r++) {
+      const t = r / NR, y = -.25 + (h + .25) * t, cx = x + lx * t + bx * sin(PI * t), cz = z + lz * t + bz * sin(PI * t);
+      const R = s * (.2 + .1 * exp(-max(y, 0) * 2.2) + .022 * sin(y * 1.3 + ph) + .014 * sin(y * 3.7 + ph * 2.1)), ring = [];
+      for (let k = 0; k < NS; k++) {
+        const a = k / NS * TAU, rough = 1 + .07 * (ihash(id, r, k) - .5) + .05 * (ihash(id, r >> 1, k >> 1) - .5);
+        ring.push(m.v(cx + cos(a) * R * rough, y, cz + sin(a) * R * rough, .55 + .45 * t));
+      }
+      rings.push(ring);
+    }
+    for (let r = 0; r < NR; r++) for (let k = 0; k < NS; k++) { const k2 = (k + 1) % NS; m.quad(rings[r][k], rings[r + 1][k], rings[r + 1][k2], rings[r][k2]); }
+  };
+  // a trunk lying across supports: tapers from butt to crown end, sags between its rests and wanders a little
+  const log = (x0, z0, x1, z1, y, r0, r1 = r0 * .8, sag = .3) => {
+    const pts = [], w = rr(-.05, .05);
+    for (let k = 0; k <= 4; k++) { const t = k / 4; pts.push([mix(x0, x1, t) + w * sin(PI * t) * (z1 !== z0), y - sag * r0 * sin(PI * t) + rr(-.012, .012), mix(z0, z1, t) + w * sin(PI * t) * (x1 !== x0)]); }
+    m.tube(pts, (k) => mix(r0, r1, k / 4) * (1 + rr(-.06, .06)), 7, false, () => .8);
+  };
+  // three porticoes of eight trunks each (6.1 m bays); each row carries spliced trunks, lapped over a column, butts
+  // alternating; then palm-stalk joists across at uneven spacing, skewed, some doubled
+  const CX = (k) => -21.35 + k * 6.1;
+  for (const z of [21.4, 17.8, 14.2]) {
+    for (let k = 0; k < 8; k++) col(CX(k) + rr(-.25, .25), z + rr(-.15, .15), 3.36);
+    const ends = [-MW + .3, CX(1), CX(3), CX(5), MW - .3];
+    for (let j = 0; j < 4; j++) {
+      const a = j ? ends[j] - .5 : ends[j], b = j < 3 ? ends[j + 1] + .5 : ends[j + 1], dz = rr(-.08, .08), r0 = rr(.18, .22), r1 = r0 * rr(.72, .85);
+      log(j & 1 ? b : a, z + dz, j & 1 ? a : b, z - dz, 3.34 + (j & 1) * .05, r0, r1, .35);
+    }
+  }
+  for (let x = -24.2; x <= 24.2; x += rr(.9, 2.2)) {
+    const sk = rr(-.45, .45), r = rr(.06, .11);
+    log(x - sk, 13.1, x + sk, MW - .3, 3.45, r, r * .7, .6);
+    if (rnd() < .3) log(x - sk + .2, 13.1, x + sk + rr(0, .3), MW - .3, 3.47, r * .8, r * .6, .5);
+  }
   for (let x = -22.9; x <= -5; x += 4.5) col(x + rr(-.2, .2), -21.2, 2.92);
-  log(-MW + .3, -21.2, -3.4, -21.2, 2.9, .15);
-  for (let x = -24; x <= -3.5; x += 1.6) log(x, -MW + .3, x, -20.2, 3.02, .06);
+  log(-MW + .3, -21.2, -3.4, -21.2, 2.9, .16, .12, .3);
+  for (let x = -24; x <= -3.5; x += rr(1.1, 2)) log(x, -MW + .3, x + rr(-.3, .3), -20.2, 3.02, .07, .05, .5);
   return m;
 }
-// roof slabs of stalks, fronds and mud, with a ragged frond fringe along the open edges
+// roof slabs of stalks, fronds and mud, with a ragged fringe of frond tips hanging along the open edges
 function meshMosqueRoof() {
+  rseed(402);
   const m = new Mesh(), e = MW - MT / 2, o = MW + MT / 2;
   box(m, -o, MH + .02, 12.95, o, MH + .3, o);
   box(m, -e, 3.08, -e, -3.25, 3.25, -20.05);
-  box(m, -e, 2.95, 12.85, e, 3.56, 12.98);
   box(m, -o - .1, MH - .12, o, o + .1, MH + .26, o + .12);
   for (const s_ of [-1, 1]) box(m, s_ < 0 ? -o - .12 : o, MH - .12, 12.95, s_ < 0 ? -o : o + .12, MH + .26, o + .12);
-  box(m, -e, 2.84, -20.12, -3.25, 3.12, -20.02); box(m, -3.33, 2.84, -e, -3.23, 3.12, -20.02);
+  // frond tips: thin blades, two-sided, of uneven length and lean (a straight fascia caught the sun as a hard rim line)
+  const fringe = (x0, x1, z, y, l0, l1) => {
+    for (let x = x0; x < x1; x += rr(.025, .07)) {
+      const w = rr(.012, .03), L = rr(l0, l1) * (rnd() < .08 ? 1.6 : 1), lx = rr(-.08, .08), lz = rr(-.1, .03);
+      // each side gets its own vertices: shared ones would average the two normals to nothing
+      for (const sd of [0, 1]) { const a = m.v(x - w, y, z, .8), b = m.v(x + w, y, z, .8), c = m.v(x + lx, y - L, z + lz, .8); if (sd) m.tri(a, b, c); else m.tri(b, a, c); }
+    }
+  };
+  fringe(-e, e, 12.92, MH + .2, .1, .34);
+  fringe(-e, -3.3, -20.08, 3.2, .08, .26);
   for (let x = -21; x <= 21.1; x += 7) box(m, x - .09, MH - .2, o, x + .09, MH - .04, o + .7);
   return m;
 }
