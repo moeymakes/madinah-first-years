@@ -6,9 +6,28 @@ Built with the `worldsmith` skill (`/home/moey/.shared/skills/worldsmith`), star
 ## State (update after every step)
 
 - Phase: realism stages 1-3 (brief: /home/moey/.config/Claude/side-session-notes/local_e46bf3a1-465b-49b7-b617-a09a30fa0fa1/realism-stages-brief.md).
-- **Stage 1: shipped 2026-11-18** (branch `realism-s1`, fast-forwarded to main). Stage 2 next on `realism-s2`; its
-  work in progress is in `git stash` "s2-wip" (palms ported from Horizon ac0180e, colonnade of 3 x 8 trunks from
-  sources, bounded GI ported from Horizon 8246d13): pop it onto `realism-s2`, build, capture, measure.
+- **Stage 1: shipped 2026-11-18 ~17:15 AEDT** (main 6ad6df1, live page byte-identical to the build).
+- Stage 2 on branch `realism-s2`: commit 345762b holds palms (after Horizon ac0180e), the prayer hall as three
+  porticoes of eight trunks (Muslim Heritage: "six or eight" per portico; the old model had 13), and bounded GI (after
+  Horizon 8246d13), all unmeasured. Capture started into verify/s2-a. Paused at 81% of the 5-hour usage window;
+  resume after the 20:00 AEDT reset.
+- Stage 2 still to do: measure s2-a vs verify/s1-i (same crop, day brightdetail must hold or rise); basalt albedo .06-.11
+  with dust (critic: lava reads brown; Horizon 8246d13 did the same); hall roof thatch without tiling and with a few
+  light gaps; clouds after Horizon 02909b3; water ditch cut into the ground with wet banks; critic round; gates; ship.
+- Stage 3 after that: Copernicus GLO-30 / SRTM terrain, OSM positions (ODbL attribution in the README), photo-calibrated
+  colours via look-metrics, page < 160 KB.
+
+### Stage 2 sources (mosque, 7 AH state)
+
+- Muslim Heritage, "The Form and Function of the Prophet's Mosque during the Time of the Prophet"
+  (https://muslimheritage.com/function-of-the-prophet-mosque/): three colonnades on the qibla side, each of six or eight
+  palm-trunk pillars; rear shade for the muhajirun; mud brick on a stone foundation about 1.5 m deep, walls 75 cm; roof
+  of palm trunks, cross-beams, leaves and stalks, about the height of a man with raised hands.
+- Madain Project, "Expansion Chronology of Masjid al-Nabawi" (https://madainproject.com/expansion_chronology_of_masjid_al_nabawi):
+  50 x 50 m after 7 AH, roof raised from 2.5 m to 3.5 m, stone foundation and unbaked brick.
+- Wikipedia, "Prophet's Mosque" (https://en.wikipedia.org/wiki/Prophet%27s_Mosque): 47.32 m per side after Khaybar;
+  roof of beaten clay and palm leaves on palm trunks, 3.60 m. Disagreements (size, when pebbles were laid, where the
+  porticoes were) are kept as they are; the model follows Madain for size and Muslim Heritage for the colonnades.
 
 ### Stage 1 gate report (crop 0,.5,1,1 below the horizon, 1920x1080, all six poses at each Time)
 
