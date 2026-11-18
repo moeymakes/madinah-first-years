@@ -110,6 +110,20 @@ cd source && npm install && npm run build
 - **[Madinah Horizon](https://moeymakes.github.io/madinah-horizon/)**: the date gardens, lava fields and hills around Madinah at golden hour, with the Prophet's Mosque and Uhud on the horizon ([source](https://github.com/moeymakes/madinah-horizon))
 - **[Nabawi Courtyard](https://moeymakes.github.io/masjid-nabawi-courtyard/)**: the marble plaza of the Prophet's Mosque up close, as the great umbrellas open ([source](https://github.com/moeymakes/masjid-nabawi-courtyard))
 
+## Data sources
+
+- **Elevation**: the relief of Uhud, Jabal Ayr and Jabal Sal' comes from the Copernicus GLO-30 Digital Elevation
+  Model (© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018, provided under COPERNICUS by the European
+  Union and ESA; free and open). It is packed into `source/src/data.js` by `source/tools/pack-data.py`, and only relief
+  well above the plain is used, so no modern building in the surface model reaches the world.
+- **Wadi al-Aqiq's course**: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, available under
+  the [Open Database License (ODbL)](https://opendatacommons.org/licenses/odbl/). Ways 960090164 and 1235902746,
+  resampled into `source/src/data.js`.
+- **Colours** were checked against public photographs of Uhud and Harrat Rahat on Wikimedia Commons, measured only;
+  no photograph is part of the page.
+
+The geography is composed, not to scale: each real feature keeps its shape but sits where the composition puts it.
+
 ## License
 
 MIT, copyright Mohammed El-Cheikh 2026. Parts adapted from Abyssal Garden (MIT); its notice is in
