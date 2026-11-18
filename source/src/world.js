@@ -213,9 +213,9 @@ function meshMosqueRoof() {
   for (const s_ of [-1, 1]) box(m, s_ < 0 ? -o - .12 : o, MH - .12, 12.95, s_ < 0 ? -o : o + .12, MH + .26, o + .12);
   // fronds poking out of the open edges: a drooping midrib with leaflets hanging off both sides, two-sided (a straight
   // fascia caught the sun as a hard rim line; lone spikes read as icicles). out: which way the edge faces in z
+  // each side gets its own vertices: shared ones would average the two normals to nothing
+  const tri2 = (p, q, r) => { for (const sd of [0, 1]) { const a = m.v(...p, .8), b = m.v(...q, .8), c = m.v(...r, .8); if (sd) m.tri(a, b, c); else m.tri(b, a, c); } };
   const fringe = (x0, x1, z, y, out, s) => {
-    // each side gets its own vertices: shared ones would average the two normals to nothing
-    const tri2 = (p, q, r) => { for (const sd of [0, 1]) { const a = m.v(...p, .8), b = m.v(...q, .8), c = m.v(...r, .8); if (sd) m.tri(a, b, c); else m.tri(b, a, c); } };
     // frond ends stick out of the mat nearly level and sag a little; their dry leaflets hang in pairs, densely
     for (let x = x0; x < x1; x += rr(.1, .26)) {
       const L = rr(.04, .22) * s, ax = rr(-.25, .25), dz = out * rr(.2, .55) * s, n = 12 + (rnd() * 8 | 0);
@@ -229,6 +229,18 @@ function meshMosqueRoof() {
   };
   fringe(-e, e, 12.92, MH + .2, -1, 1);
   fringe(-e, -3.3, -20.08, 3.2, 1, .8);
+  // loose leaflets hanging through the mat between the joists
+  const tufts = (n, x0, x1, z0, z1, y) => {
+    for (let k = 0; k < n; k++) {
+      const x = rr(x0, x1), z = rr(z0, z1);
+      for (let j = 3 + (rnd() * 5 | 0); j > 0; j--) {
+        const a = rr(0, TAU), ll = rr(.12, .38), p = [x + rr(-.06, .06), y, z + rr(-.06, .06)];
+        tri2(p, [p[0] + .02 * cos(a + 1.6), y, p[2] + .02 * sin(a + 1.6)], [p[0] + ll * .35 * cos(a), y - ll, p[2] + ll * .35 * sin(a)]);
+      }
+    }
+  };
+  tufts(170, -e + .5, e - .5, 13.4, 24.8, MH + .01);
+  tufts(50, -e + .5, -3.6, -24.6, -20.3, 3.07);
   for (let x = -21; x <= 21.1; x += 7) box(m, x - .09, MH - .2, o, x + .09, MH - .04, o + .7);
   return m;
 }

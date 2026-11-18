@@ -578,10 +578,10 @@ fn frondL(p: vec2f, s: f32) -> vec4f {
   let c = vec2f(p.x / 2.8 + hs(floor(p.y / 1.4) * 3.7 + s) * 2., p.y / 1.4); let id = floor(c); let h = hs(id.x * 5.3 + id.y * 9.1 + s);
   let a = (h - .5) * .45; let q = (fract(c) - .5) * vec2f(2.8, 1.4);
   let u = q.x * cos(a) + q.y * sin(a); let w = q.y * cos(a) - q.x * sin(a);
-  let t = sat(u / 1.3 * .5 + .5);
+  let fl = .8 + .45 * hs(h * 11.); let t = sat(u / (1.3 * fl) * .5 + .5);
   let hw = .44 * (1. - t * t * t * t) * (.75 + .5 * hs(h * 3.)) * ss(0., .08, t);
-  let cov = (1. - ss(hw * .45, hw, abs(w))) * ss(1.35, 1.1, abs(u));
-  let lf = fract(select(-1., 1., h > .5) * u * 9. + abs(w) * 4.5 + h * 9.);
+  let cov = (1. - ss(hw * .45, hw, abs(w))) * ss(1.35, 1.1, abs(u) / fl);
+  let lf = fract(select(-1., 1., h > .5) * u * (7. + 4. * hs(h * 5.)) + abs(w) * (2.5 + 3. * hs(h * 7.)) + h * 9. + .6 * sin(u * 2.3 + h * 20.));
   return vec4f(ss(.15, .35, lf) * ss(.95, .7, lf), 1. - ss(.02, .05, abs(w)), cov, h);
 }
 @fragment fn fs(i: VO, @builtin(front_facing) ff: bool) -> FO {
@@ -627,7 +627,7 @@ fn frondL(p: vec2f, s: f32) -> vec4f {
     let cg = vec2f(mqf.x - (-21.35 + 6.1 * clamp(round((mqf.x + 21.35) / 6.1), 0., 7.)), mqf.y - (14.2 + 3.6 * clamp(round((mqf.y - 14.2) / 3.6), 0., 2.)));
     let sg = vec2f(mqf.x - (-22.9 + 4.5 * clamp(round((mqf.x + 22.9) / 4.5), 0., 3.)), mqf.y + 21.2);
     let foot = 1. - .38 * (1. - ss(.25, 1.2, min(length(cg), length(sg))));
-    alb = mix(alb, mix(vec3f(.40, .30, .20), vec3f(.48, .37, .25), A.c) * foot * (.9 + .15 * Lg.b) * (1. - .22 * peb) * (1. - .1 * rows) * mix(1., mix(.72, 1.15, hs(ph * 5.)), pebS) + vec3f(.05, .04, .03) * ss(.7, .9, C.h) * fk, court * .97);
+    alb = mix(alb, mix(vec3f(.40, .30, .20), vec3f(.48, .37, .25), A.c) * foot * (.9 + .15 * Lg.b) * mix(.86, 1.08, ss(.25, .75, B.h * .6 + A.h * .4)) * (1. - .22 * peb) * (1. - .1 * rows) * mix(1., mix(.72, 1.15, hs(ph * 5.)), pebS) + vec3f(.05, .04, .03) * ss(.7, .9, C.h) * fk, court * .97);
     // harrat basalt is grey-black (albedo about .06-.11), not brown: windblown dust settles only in the flat hollows
     let bas = mix(vec3f(.056, .059, .066), vec3f(.096, .097, .10), ss(.4, .8, C.c)) * (.8 + .4 * mix(.5, F.h * C.h, fk));
     // the flow front's rising edge is basalt too, or it shows as a pale sand lip round the lobe
@@ -649,7 +649,7 @@ fn frondL(p: vec2f, s: f32) -> vec4f {
     alb = mix(alb, mix(mix(vec3f(.06, .06, .063), vec3f(.105, .10, .097), A.h) * (.75 + .5 * B.c), vec3f(.30, .25, .20), ss(.7, .88, B.c) * .22), lava * (1. - nk) * .9 * (1. - .45 * ss(1500., 6000., dist)));
     let fam = mix(.32, .45, max(wadi, lava));
     alb *= mix(1., 1. - fam * .5 + fam * F.h, fk);
-    bump = select(mix(.3, mix(.7, .9, lava), max(wadi, lava)), max(.55, lava * 1.3), far) * (1. - .6 * court); gloss = mix(.03, .16, lava * (1. - flt)) * ss(120., 20., dist);
+    bump = select(mix(.3, mix(.7, .9, lava), max(wadi, lava)), max(.55, lava * 1.3), far) * (1. - .9 * court); gloss = mix(.03, .16, lava * (1. - flt)) * ss(120., 20., dist);
   } else if (mat == 2) {
     alb = mix(vec3f(.058, .058, .062), vec3f(.10, .095, .092), ss(.45, .75, C.c)) * (.7 + .6 * F.h);
     alb = mix(alb, vec3f(.34, .28, .21), flt * ss(.75, .95, B.c) * .18); bump = 1.5; gloss = .1;
@@ -748,13 +748,13 @@ fn frondL(p: vec2f, s: f32) -> vec4f {
     // underneath, three layers of fronds laid across the joists at random angles over dark mud and stalk ends (rows of stalks
     // and fronds in courses read as parquet); seen from below the lowest layer covers the others
     let rq = i.wp.xz - vec2f(${MQ[0]}., ${MQ[1]}.);
-    var under = mix(vec3f(.25, .19, .12), vec3f(.36, .28, .17), ss(.3, .7, C.c)) * (.8 + .4 * B.h);
+    var under = mix(vec3f(.30, .23, .14), vec3f(.42, .32, .19), ss(.3, .7, C.c)) * (.8 + .4 * B.h);
     var ftone = vec3f(.5, .38, .2);
     for (var l = 0; l < 3; l++) {
       let fl = f32(l);
-      let f = frondL(select(rq + vec2f(fl * 1.3, fl * .55), rq.yx + 5., l == 0), fl * 7.);
-      ftone = mix(vec3f(.40, .30, .15), vec3f(.58, .46, .26), hs(f.w * 3.1)) * mix(vec3f(1.), vec3f(.82, .8, .78), ss(.5, .85, hs(f.w * 7.)));
-      let fc = mix(mix(ftone * .84, ftone, f.x * mix(.5, 1., bfade)), ftone * .86, f.y * bfade) * (.85 + .3 * A.h);
+      let f = frondL(select(rq + vec2f(fl * 1.3, fl * .55), rq.yx + 5., l == 0) / (.8 + .2 * fl), fl * 7.);
+      ftone = mix(vec3f(.34, .25, .13), vec3f(.58, .46, .26), hs(f.w * 3.1)) * mix(vec3f(1.), vec3f(.82, .8, .78), ss(.5, .85, hs(f.w * 7.)));
+      let fc = mix(mix(ftone * .9, ftone, f.x * mix(.5, 1., bfade)), ftone * .86, f.y * bfade) * (.85 + .3 * A.h);
       under = mix(under * (.85 + .15 * f.z), fc, f.z * (.75 + .25 * bfade));
     }
     under *= .8 + .3 * C.h;
@@ -778,17 +778,16 @@ fn frondL(p: vec2f, s: f32) -> vec4f {
       let ta = select(ang, select(atan2(on.y, on.x), atan2(on.y, on.z), ax) / TAU, lg);
       let cid = hs(select(floor(i.wp.x / 3.6 + .5) * 7.3 + floor(i.wp.z / 3.6 + .5) * 3.1,
         floor(select(i.wp.x, i.wp.z, ax) * 2.) * 5.7 + floor(ty / 6.1) * 3.3 + 9., lg));
-      // some trunks keep their leaf-base scars (the diamond crosshatch), others were dressed or weathered smooth and
-      // grey; long drying cracks and fibre run with the grain (even scar rings read as turned wood)
+      // leaf-base scars (the diamond crosshatch) stronger on some trunks than others; long drying cracks run with the
+      // grain (even scar rings read as turned wood; a pale sun-greyed variant read as concrete)
       let fq = ty * 3.3 * (.8 + .5 * cid);
       let k3 = abs(fract(fq + ta * 8.) - .5); let k4 = abs(fract(fq - ta * 8.) - .5);
-      let dia = (1. - ss(.03, .2, min(k3, k4))) * ss(.5, .8, hs(cid * 3.1)) * bfade;
-      let fib = ss(.3, .7, fract(ta * 90. + .5 * sin(ty * 3. + cid * 9.)));
+      let dia = (1. - ss(.03, .2, min(k3, k4))) * (.45 + .55 * hs(cid * 3.1)) * bfade * select(1., .35, lg);
       let crack = ss(.93, .985, fract(ta * 11. + .12 * sin(ty * .8 + cid * 4.) + cid * 3.)) * ss(.35, .65, C.c);
       let ry = ty * (1.6 + 1.2 * cid) + .55 * sin(ty * (.9 + cid) + cid * 17.) + cid * 5.;
       let ring = ss(.0, .08, abs(fract(ry) - .5) - .4) * hs(floor(ry) * 1.9 + cid);
-      let base = mix(mix(vec3f(.40, .31, .20), vec3f(.28, .21, .14), cid), vec3f(.40, .37, .33), ss(.55, .9, hs(cid * 5.3)) * .55);
-      alb = base * (1. - .16 * dia) * (1. - .1 * fib * bfade) * (1. - .4 * crack * bfade) * (1. - .12 * ring * bfade) * (.72 + .56 * C.h) * (.9 + .2 * B.c);
+      let base = mix(vec3f(.33, .24, .15), vec3f(.24, .17, .11), cid * .7 + .3 * B.c);
+      alb = base * (1. - .3 * dia) * (1. - .4 * crack * bfade) * (1. - .12 * ring * bfade) * (.72 + .56 * C.h) * (.9 + .2 * B.c);
       alb *= select(mix(vec3f(.72, .66, .6), vec3f(1.), ss(.2, 1.4, i.op.y)), vec3f(1.), lg);
     }
     vao = mix(select(.55, .82, mat == 19), 1., ss(0., 2., i.op.y - sd * 37.)); bump = .8;
@@ -812,7 +811,7 @@ fn frondL(p: vec2f, s: f32) -> vec4f {
     return outA(c, vec3f(0.), vec3f(0.), i.wp, 1.);
   }
   let lvN = select(0., max(nm.g * nk, fm.r * (1. - nk)), mat <= 1);
-  let onT = normalize(mix(on, vec3f(0., 1., 0.), select(0., max(court * .55, flt * (1. - max(nm.r, nm.g) * nk) * .3 * nk), mat <= 1)));
+  let onT = normalize(mix(on, vec3f(0., 1., 0.), select(0., max(court * .85, flt * (1. - max(nm.r, nm.g) * nk) * .3 * nk), mat <= 1)));
   let N = normalize(qrot(i.q, normalize(onT + (A.n * .8 * (1. - lvN * .8) + B.n * .6 * (1. - lvN * .5) + C.n * (.4 + lvN * .5) * ss(45., 8., dist) + F.n * (select(.5, .12, mat <= 1) + lvN * .6) * fk) * bump)));
   let L = g.sun.xyz; let V = normalize(g.cam.xyz - i.wp);
   let vv = vol(i.wp + n0 * 1.2); let v2 = vol(i.wp + n0 * 4.);
@@ -834,7 +833,7 @@ fn frondL(p: vec2f, s: f32) -> vec4f {
   // sun (or moon) through the holes in the hall roof: patches on the floor and trunks, stretched by the low sun
   let rp = mq + L * ((3.42 - mq.y) / max(L.y, .08));
   let dap = thatchGap(rp.xz) * f32(abs(rp.x) < 24.6 && rp.z > 13.1 && rp.z < 24.9 && mq.y < 3.3 && !far) * sat(hall * 3.) * ss(.4, .8, on.y);
-  let E = SUNC * max(sh, dap * mix(.9, .4, NIGHT));
+  let E = SUNC * max(sh, dap * .9 * (1. - NIGHT));
   let ndl = sat(dot(N, L));
   let am = amb(N, vv.y) * ao;
   // moonlit court light bounced into the shade of the hall, reaching the roof's shadow on the court too
