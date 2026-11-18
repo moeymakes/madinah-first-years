@@ -838,10 +838,10 @@ fn frondL(p: vec2f, s: f32) -> vec4f {
   let am = amb(N, vv.y) * ao;
   // moonlit court light bounced into the shade of the hall, reaching the roof's shadow on the court too
   let hallN = (1. - ss(24.3, 25., abs(mq.x))) * ss(6., 12., mq.z) * (1. - ss(25.1, 25.5, mq.z)) * (1. - ss(3.1, 3.38, mq.y)) * (1. - sh);
-  let ambC = alb * am + alb * mix(vec3f(.62, .40, .22) * .75 * sat(hall + suf), SUNC * vec3f(.8, .92, 1.1) * mix(.45, .2, ss(13., 25., mq.z)) * sat(hallN + suf), NIGHT)
+  let ambC = alb * am + alb * mix(vec3f(.62, .40, .22) * .75 * sat(hall + suf), SUNC * vec3f(.8, .92, 1.1) * mix(.62, .32, ss(13., 25., mq.z)) * sat(hallN + suf), NIGHT)
     + alb * vec3f(.50, .32, .18) * .22 * (1. - NIGHT) * (1. - sh) * flt * nk * f32(mat <= 1)
     // the court's light bounced up onto the underside of the roofs (it left the ceiling black at night)
-    + alb * mix(vec3f(.62, .40, .22) * .12, SUNC * vec3f(.8, .92, 1.1) * .16, NIGHT) * f32(mat == 9) * ss(-.5, -.8, on.y) * (1. - ss(24.3, 25., abs(mq.x)));
+    + alb * mix(vec3f(.62, .40, .22) * .12, SUNC * vec3f(.8, .92, 1.1) * .32, NIGHT) * f32(mat == 9) * ss(-.5, -.8, on.y) * (1. - ss(24.3, 25., abs(mq.x)));
   var c = alb * E * ndl + ambC + emi;
   let Hh = normalize(V + L);
   let spc = mix(vec3f(.04), alb, metal);
@@ -1140,7 +1140,7 @@ fn tmap(x: vec3f) -> vec3f { return clamp((x * (2.51 * x + .03)) / (x * (2.43 * 
   c = tmap(c);
   // moonlight is seen with the rods: colour drains and what remains leans blue (Purkinje shift), so warm sand
   // does not read as daylit under a night sky
-  if (NIGHT > .5) { let ln = dot(c, LUMA); c = mix(c, vec3f(ln) * vec3f(.78, .88, 1.12), .62); }
+  if (NIGHT > .5) { let ln = dot(c, LUMA); c = mix(c, vec3f(ln) * vec3f(.64, .82, 1.26), .62); }
   let l0 = dot(c, vec3f(.2126, .7152, .0722));
   let l = mix(l0, l0 * l0 * (3. - 2. * l0), .4);
   c *= l / max(l0, 1e-4);
