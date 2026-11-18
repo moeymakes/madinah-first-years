@@ -15,14 +15,25 @@ Built with the `worldsmith` skill (`/home/moey/.shared/skills/worldsmith`), star
   (2026-11-19 ~01:50 AEDT). The coordinating session said: if stage 2 cannot ship, do not ship it and go on to stage 3
   on the branch. Shipping stage 3 would ship stage 2 with it, so nothing on these branches goes live until Moey
   decides on stage 2. All gates but the critic pass (table below).
-- **2026-11-19 ~04:35 AEDT, hall fix in progress** (Moey: "Fix prayer hall first"; ship realism-s3 only when every
-  gate passes, critic included; if the hall is still major after the fix loops, stop and report with captures). Hall
-  loop 1 committed on realism-s3 (853ff17): geometry, not textures (trunks with flared bases, girth swells, rough
-  outlines; spliced tapering beams; uneven skewed joists; frond-tip fringe replacing the fascia; sun leak along joists
-  masked; contact shade at column feet; pebbles in patches). Full capture verify/s3-h done: 0 errors at all 3 Times
-  (dev, High); day brightdetail 45.4 (52.0, 38.9) vs s3-g 45.3, clip max 0.08, flatwhite max 0.99 (pose 5 sky haze,
-  as before). Not yet done: perf/gate run (gate.sh), critic round, ship. Stopped
-  here at 84% of the 5-hour window; a resume cron is armed for after the reset.
+- **2026-11-19 ~09:00 AEDT: prayer-hall fix stopped at the 4-loop cap, NOT shipped** (Moey: "Fix prayer hall
+  first"; ship realism-s3 only when every gate passes, critic included; if the hall is still major after the fix
+  loops, stop and report with captures). realism-s3 is at the loop-4 commit, pushed; main and live are still stage 1.
+  Every numeric gate passes on loop 4 (table below); the critic still rates the hall major at all three Times (round
+  5), after rating the near-identical golden and dawn hall minor in round 4. Rounds: verify/s3-hall-critic.md.
+  Contact sheet (hall pose 2, golden | dawn | night, before and loops 1-4):
+  /home/moey/Dev/reports/madinah-first-years-hall-loops-2026-11-19.jpg.
+  - Loop 1 (853ff17): trunk geometry (flared bases, girth swells, rough outlines), spliced tapering beams, uneven
+    skewed joists, frond-tip fringe for the fascia, sun leak along joists masked, contact shade at column feet.
+  - Loop 2 (8bc6168): ceiling as three layers of fronds at random angles; frond ends with paired hanging leaflets at
+    the roof edges; bark that runs along each log (axis in aux); sun patches through roof holes; ceiling bounce.
+  - Loop 3 (d1c6fab): warm brown trunks with the leaf-base crosshatch on all (a sun-greyed variant read as concrete);
+    calmer ceiling; leaflets hanging through the mat; moon patches dropped (thin streaks); court mottle at 3-14 m
+    scale (the 0.2 m scale and the court's sand normals both showed a tiled swirl).
+  - Loop 4 (86636bf): night court bounce into the hall and onto the ceiling; moonlit grade cooler and bluer.
+- Next if the hall is resumed (from round 5, still unaddressed): the ceiling needs relief, not albedo (sagging
+  bundles between joists as geometry, light leaking between them); trunks need per-column pattern scale, contrast
+  and some unscarred trunks (one lattice on every trunk reads as a decal); the floor needs grain at the trunks'
+  sharpness without the tiled sand normals; night needs a value hierarchy (lit faces up, ceiling down).
 - Stage 3 content: real relief for Uhud, Jabal Ayr and Jabal Sal' from Copernicus GLO-30 (tile at
   /home/moey/Dev/research/madinah-horizon-data/dem/, packed by source/tools/pack-data.py into src/data.js; GLO-30 is a
   surface model holding the modern city's buildings, so only relief 20+ m above the plain is used, and Sal' is masked
@@ -43,16 +54,16 @@ Built with the `worldsmith` skill (`/home/moey/.shared/skills/worldsmith`), star
 
 ### Stage 3 gate report (crop 0,.5,1,1, 1920x1080, six poses x three Times)
 
-| Gate | Live = stage 1 (verify/s1-i) | Stage 3 (verify/s3-g; perf and errors on s3-f) | Result |
-|---|---|---|---|
-| brightdetail, day mean (dawn, golden) | 42.4 (48.7, 36.2) | 45.3 (51.8, 38.7) | +6.7%, pass |
-| clip% max | 0.07 | 0.08 (dawn pose 5, glow beside the sun) | pass (< 0.5) |
-| flatwhite% max | 0.69 | 0.98 (pose 5, y 540-566: sky haze above that pose's horizon, where the old over-tall procedural Uhud used to stand) | pass (< 2) |
-| GPU, 60 s flight 2560x1440 High | 7.95 avg, p99 12.68 | 7.86 avg, p99 12.08, max 13.58 (verify/s3f-gate/perf) | pass |
-| console errors, index.html, 3 Times x 3 levels | 0 | 0 at all 9 (verify/s3f-gate) | pass |
-| menu preview | renders | renders, 0 errors | pass |
-| index.html size | 122.6 KB | 142.3 KB | pass (< 160 KB) |
-| critic (sonnet, images only) | major | **major** (verify/s3-f/critic.md, with disposition) | fail: stage-3 item left is the layout reading as a grid |
+| Gate | Live = stage 1 (verify/s1-i) | Stage 3 (verify/s3-g; perf and errors on s3-f) | Hall loop 4 (verify/s3-k) | Result |
+|---|---|---|---|---|
+| brightdetail, day mean (dawn, golden) | 42.4 (48.7, 36.2) | 45.3 (51.8, 38.7) | 45.4 (51.8, 39.0) | pass |
+| clip% max | 0.07 | 0.08 (dawn pose 5, glow beside the sun) | 0.08 | pass (< 0.5) |
+| flatwhite% max | 0.69 | 0.98 (pose 5, y 540-566: sky haze above that pose's horizon, where the old over-tall procedural Uhud used to stand) | 0.99 (same) | pass (< 2) |
+| GPU, 60 s flight 2560x1440 High | 7.95 avg, p99 12.68 | 7.86 avg, p99 12.08, max 13.58 (verify/s3f-gate/perf) | 9.18 avg, p99 13.15, max 15.99 | pass (<= 11 / 16) |
+| console errors, index.html, 3 Times x 3 levels | 0 | 0 at all 9 (verify/s3f-gate) | 0 at all 9 | pass |
+| menu preview | renders | renders, 0 errors | renders at phone, tablet, desktop, 0 errors | pass |
+| index.html size | 122.6 KB | 142.3 KB | 145.0 KB | pass (< 160 KB) |
+| critic (sonnet, images only) | major | **major** (verify/s3-f/critic.md, with disposition) | **major, hall major at all 3 Times** (verify/s3-hall-critic.md) | fail |
 
 What moved the numbers: DEM 42.2 (s3-a, modern buildings and a basalt-masked bump in the settlement from the surface
 model) -> 44.5 once masked (s3-b); Aqiq 44.6; granite albedo 44.5 (Uhud barely changed: haze dominates at 4 km); haze
