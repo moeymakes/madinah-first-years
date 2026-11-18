@@ -976,7 +976,7 @@ const W_POST = S_G + W_FS + /*wgsl*/`
 @group(0) @binding(3) var tR: texture_2d<f32>;
 @group(0) @binding(4) var tB: texture_2d<f32>;
 @group(0) @binding(5) var tDp: texture_depth${AA > 1 ? '_multisampled' : ''}_2d;
-const SHARP = .8;
+const SHARP = 1.25;
 fn tmap(x: vec3f) -> vec3f { return clamp((x * (2.51 * x + .03)) / (x * (2.43 * x + .59) + .14), vec3f(0.), vec3f(1.)); }
 @fragment fn fs(@builtin(position) fc: vec4f) -> @location(0) vec4f {
   let px = vec2i(fc.xy);
