@@ -11,16 +11,44 @@ Built with the `worldsmith` skill (`/home/moey/.shared/skills/worldsmith`), star
   commit holds it all; main and the live page are still stage 1. Reason: after 4 fix loops on the prayer hall the
   critic still rates its surfaces major (round 5, verify/s2-k/critic.md), and the hall is the stage-2 hero, so the
   brief's ship-with-out-of-scope-majors rule does not apply. Every metric beats live (table below).
-- **Stage 3: not started.** It would build on the unshipped stage 2. Data ready for it: the Copernicus GLO-30 tile
-  N24_E039 at /home/moey/Dev/research/madinah-horizon-data/dem/ (Jabal Sal' summit 674.7 m at 24.4772 N 39.5981 E,
-  ~70 m above the plain; Uhud 1070 m at 24.5214 N 39.6264 E). OSM: every Overpass mirror answered 502 / timeout
-  21:00-21:20 AEDT; the period-appropriate query (waterways, peaks, wells, historic sites; modern streets do not belong
-  in a 7th-century world) is in /home/moey/Dev/research/madinah-first-years-data/osm/query.txt.
+- **Stage 3: built on branch `realism-s3` (from realism-s2), stopped after 1 critic fix loop, not shipped**
+  (2026-11-19 ~01:50 AEDT). The coordinating session said: if stage 2 cannot ship, do not ship it and go on to stage 3
+  on the branch. Shipping stage 3 would ship stage 2 with it, so nothing on these branches goes live until Moey
+  decides on stage 2. All gates but the critic pass (table below).
+- Stage 3 content: real relief for Uhud, Jabal Ayr and Jabal Sal' from Copernicus GLO-30 (tile at
+  /home/moey/Dev/research/madinah-horizon-data/dem/, packed by source/tools/pack-data.py into src/data.js; GLO-30 is a
+  surface model holding the modern city's buildings, so only relief 20+ m above the plain is used, and Sal' is masked
+  to the hill itself); Wadi al-Aqiq on its real course from OpenStreetMap (ways 960090164, 1235902746, via Nominatim:
+  every Overpass mirror answered 502 or timed out on Nov 18-19), which also sets Harrat al-Wabara's edge; colours
+  checked against six Wikimedia Commons photos (/home/moey/Dev/research/madinah-first-years-data/photos/, measured
+  only); README data-sources section with the ODbL and Copernicus credits.
+- What the photo calibration could and could not settle: Uhud's hue (20-30) and saturation (.3-.4) sit inside the
+  photos' 17-33 / .2-.4. Rock-to-sand luminance cannot be matched: the photos are midday and this world's sun is 6-9
+  degrees, where slopes facing the sun get ~4x the light of flat sand. Uhud's relative contrast rose .05 -> .07 (haze
+  and dust thinned a third, crags and scree added) against .4-.5 in photos taken from 1-3 km; the render sees it
+  through 4-5 km of air.
 - Next if stage 2 is resumed: (1) change the hall's geometry, not its textures: girth varying along each trunk,
   joists that sag and differ in spacing, ragged frond ends hanging from the roof edge; (2) port Horizon 133f332 (GI
   gain 3 -> 1.5, gathered radiance cap 4 -> 2; white halos round sunlit boxes in Horizon); (3) the joist `rr()` calls
   added in s2-i shift the shared random stream after the mosque timber, which moved a palm in dawn pose 1: switch them
   to a position hash.
+
+### Stage 3 gate report (crop 0,.5,1,1, 1920x1080, six poses x three Times)
+
+| Gate | Live = stage 1 (verify/s1-i) | Stage 3 (verify/s3-g; perf and errors on s3-f) | Result |
+|---|---|---|---|
+| brightdetail, day mean (dawn, golden) | 42.4 (48.7, 36.2) | 45.3 (51.8, 38.7) | +6.7%, pass |
+| clip% max | 0.07 | 0.08 (dawn pose 5, glow beside the sun) | pass (< 0.5) |
+| flatwhite% max | 0.69 | 0.98 (pose 5, y 540-566: sky haze above that pose's horizon, where the old over-tall procedural Uhud used to stand) | pass (< 2) |
+| GPU, 60 s flight 2560x1440 High | 7.95 avg, p99 12.68 | 7.86 avg, p99 12.08, max 13.58 (verify/s3f-gate/perf) | pass |
+| console errors, index.html, 3 Times x 3 levels | 0 | 0 at all 9 (verify/s3f-gate) | pass |
+| menu preview | renders | renders, 0 errors | pass |
+| index.html size | 122.6 KB | 142.3 KB | pass (< 160 KB) |
+| critic (sonnet, images only) | major | **major** (verify/s3-f/critic.md, with disposition) | fail: stage-3 item left is the layout reading as a grid |
+
+What moved the numbers: DEM 42.2 (s3-a, modern buildings and a basalt-masked bump in the settlement from the surface
+model) -> 44.5 once masked (s3-b); Aqiq 44.6; granite albedo 44.5 (Uhud barely changed: haze dominates at 4 km); haze
+and dust thinned 45.1; crags 44.7; critic fix 45.3.
 
 ### Stage 2 gate report (crop 0,.5,1,1, 1920x1080, six poses x three Times)
 
