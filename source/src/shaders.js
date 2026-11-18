@@ -162,7 +162,7 @@ fn massif(p: vec2f, c: vec2f, ang: f32, L: f32, W: f32) -> f32 {
   // GLO-30 is a surface model: it holds the modern city's buildings (up to ~60 m), so only relief well above the plain
   // is taken, and the plain itself is left to the oasis
   let uh = ss(30., 150., U.x) * U.y; let ay = ss(30., 150., Y.x) * Y.y;
-  h += U.x * U.y * ss(20., 70., U.x) + uh * (28. * (ridged(p2 + 300., .006) - .55) + 14. * (fbm(vec3f(x * .02, 7., z * .02), 3) - .5));
+  h += U.x * U.y * ss(20., 70., U.x) + uh * (50. * (ridged(p2 + 300., .006) - .55) + 26. * (ridged(p2 + 700., .016) - .5) + 14. * (fbm(vec3f(x * .02, 7., z * .02), 3) - .5));
   h += Y.x * Y.y * ss(20., 70., Y.x) + ay * (22. * (ridged(p2 + 900., .006) - .55) + 10. * (fbm(vec3f(x * .02, 9., z * .02), 3) - .5));
   // Jabal Sal', a low rocky hill close to the north-west
   // Jabal Sal' from the DEM (only the hill: the plain around it in the patch is left to the oasis), crags and gullies
@@ -202,7 +202,9 @@ const W_FS = /*wgsl*/`
 // warm. The same media drive the sun colour (CPU, below), the sky (LUTs, main.js) and the aerial perspective.
 // turb: aerosol multiple of a clear sky. haze: the dusty boundary layer over the city (per km, ~1 km deep) that
 // makes Uhud and the far harrat fade; dust: the 70 m ground layer (dawn mist lies thicker in the hollows)
-const ATM = { turb: [7, 8, 12][TOD], haze: [.06, .075, .04][TOD], dust: [1.6, 1.3, 1][TOD], alt: .62 };
+// haze and dust thinned a third after calibrating on photos of Uhud: from 3-4 km its sunlit rock reads .4-.7 of the sand's
+// luminance; the thicker air made it 1.0-1.2 (look-metrics, verify/s3-d vs Wikimedia Commons, not embedded)
+const ATM = { turb: [7, 8, 12][TOD], haze: [.04, .05, .04][TOD], dust: [1.1, .9, 1][TOD], alt: .62 };
 const ATM_BR = [5.802e-3, 13.558e-3, 33.1e-3], ATM_BO = [.65e-3, 1.881e-3, .085e-3];
 const ATM_BMS = 3.996e-3 * ATM.turb, ATM_BME = [4.5e-3, 4.75e-3, 5.2e-3].map((v) => v * ATM.turb);
 const SUNV = TP.sun.map((c) => c / hypot(...TP.sun));
@@ -611,7 +613,10 @@ fn room(e: vec2f, d0: vec3f, o: vec2f, fl: f32, lit: vec3f, lamp: f32) -> vec3f 
     // fresh black flows and older rust-brown weathered sheets, in patches a few hundred metres across
     let basV = bas * mix(.78, 1.2, Lg.b) * mix(vec3f(1.), vec3f(1.25, 1.04, .86), ss(.6, .85, Mg.a) * .4);
     alb = mix(alb, mix(basV, vec3f(.34, .28, .21) * (.8 + .3 * B.h), flt * ss(.74, .94, Lg.a + .3 * B.c) * .28), lv);
-    var gra = select(mix(vec3f(.24, .18, .15), vec3f(.34, .26, .21), A.c), mix(vec3f(.46, .19, .10), vec3f(.62, .31, .17), A.c), far) * (.68 + .55 * B.h);
+    // Uhud's granite calibrated on photos (look-metrics, Wikimedia Commons, not embedded): sunlit rock about .4-.7 of
+    // the sand's luminance, hue 17-33 degrees, saturation .2-.4
+    // photos put the mountain's relative contrast at .4-.5 (dark crags, pale scree in the gullies); the render had .05-.1
+    var gra = select(mix(vec3f(.24, .18, .15), vec3f(.34, .26, .21), A.c), mix(vec3f(.30, .18, .12), vec3f(.40, .28, .19), A.c), far) * select(.68 + .55 * B.h, .4 + 1. * ss(.25, .75, B.h * .7 + C.c * .3), far);
     gra = mix(gra, vec3f(.16, .11, .09), ss(.5, .75, fract(i.wp.y * .11 + A.h * 1.5)) * select(.45, 0., far));
     gra = mix(gra, gra * vec3f(.55, .5, .5), ss(.55, .8, B.c) * f32(far) * .5);
     alb = mix(alb, gra, sat(gran * 1.4) * (1. - .1 * flt));
