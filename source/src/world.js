@@ -176,10 +176,11 @@ function meshMosqueTimber() {
     for (let r = 0; r < NR; r++) for (let k = 0; k < NS; k++) { const k2 = (k + 1) % NS; m.quad(rings[r][k], rings[r + 1][k], rings[r + 1][k2], rings[r][k2]); }
   };
   // a trunk lying across supports: tapers from butt to crown end, sags between its rests and wanders a little
+  // aux carries the log's axis to the shader (negative: lying; -.3 along x, -.8 along z) so its bark runs lengthwise
   const log = (x0, z0, x1, z1, y, r0, r1 = r0 * .8, sag = .3) => {
-    const pts = [], w = rr(-.05, .05);
-    for (let k = 0; k <= 4; k++) { const t = k / 4; pts.push([mix(x0, x1, t) + w * sin(PI * t) * (z1 !== z0), y - sag * r0 * sin(PI * t) + rr(-.012, .012), mix(z0, z1, t) + w * sin(PI * t) * (x1 !== x0)]); }
-    m.tube(pts, (k) => mix(r0, r1, k / 4) * (1 + rr(-.06, .06)), 7, false, () => .8);
+    const pts = [], w = rr(-.05, .05), ph = rr(0, 9), ax = abs(x1 - x0) > abs(z1 - z0) ? -.3 : -.8;
+    for (let k = 0; k <= 8; k++) { const t = k / 8; pts.push([mix(x0, x1, t) + w * sin(PI * t) * (z1 !== z0), y - sag * r0 * sin(PI * t) + rr(-.012, .012), mix(z0, z1, t) + w * sin(PI * t) * (x1 !== x0)]); }
+    m.tube(pts, (k) => mix(r0, r1, k / 8) * (1 + .08 * sin(k * 1.9 + ph) + rr(-.05, .05)), 8, false, () => ax);
   };
   // three porticoes of eight trunks each (6.1 m bays); each row carries spliced trunks, lapped over a column, butts
   // alternating; then palm-stalk joists across at uneven spacing, skewed, some doubled
@@ -210,16 +211,24 @@ function meshMosqueRoof() {
   box(m, -e, 3.08, -e, -3.25, 3.25, -20.05);
   box(m, -o - .1, MH - .12, o, o + .1, MH + .26, o + .12);
   for (const s_ of [-1, 1]) box(m, s_ < 0 ? -o - .12 : o, MH - .12, 12.95, s_ < 0 ? -o : o + .12, MH + .26, o + .12);
-  // frond tips: thin blades, two-sided, of uneven length and lean (a straight fascia caught the sun as a hard rim line)
-  const fringe = (x0, x1, z, y, l0, l1) => {
-    for (let x = x0; x < x1; x += rr(.025, .07)) {
-      const w = rr(.012, .03), L = rr(l0, l1) * (rnd() < .08 ? 1.6 : 1), lx = rr(-.08, .08), lz = rr(-.1, .03);
-      // each side gets its own vertices: shared ones would average the two normals to nothing
-      for (const sd of [0, 1]) { const a = m.v(x - w, y, z, .8), b = m.v(x + w, y, z, .8), c = m.v(x + lx, y - L, z + lz, .8); if (sd) m.tri(a, b, c); else m.tri(b, a, c); }
+  // fronds poking out of the open edges: a drooping midrib with leaflets hanging off both sides, two-sided (a straight
+  // fascia caught the sun as a hard rim line; lone spikes read as icicles). out: which way the edge faces in z
+  const fringe = (x0, x1, z, y, out, s) => {
+    // each side gets its own vertices: shared ones would average the two normals to nothing
+    const tri2 = (p, q, r) => { for (const sd of [0, 1]) { const a = m.v(...p, .8), b = m.v(...q, .8), c = m.v(...r, .8); if (sd) m.tri(a, b, c); else m.tri(b, a, c); } };
+    // frond ends stick out of the mat nearly level and sag a little; their dry leaflets hang in pairs, densely
+    for (let x = x0; x < x1; x += rr(.1, .26)) {
+      const L = rr(.04, .22) * s, ax = rr(-.25, .25), dz = out * rr(.2, .55) * s, n = 12 + (rnd() * 8 | 0);
+      const P = (t) => [x + ax * t, y - .03 - L * t * t, z + dz * t];
+      for (let j = 0; j < 3; j++) { const p = P(j / 3), q = P((j + 1) / 3); tri2([p[0] - .01, p[1], p[2]], [p[0] + .01, p[1], p[2]], q); }
+      for (let j = 1; j <= n; j++) {
+        const t = j / (n + 1), p = P(t), q = P(t + .5 / (n + 1)), ll = rr(.12, .26) * (1 - .4 * t);
+        for (const sd of [-1, 1]) { const a = rr(.85, 1.35); tri2(p, q, [p[0] + sd * ll * cos(a), p[1] - ll * sin(a), p[2] + rr(-.06, .06)]); }
+      }
     }
   };
-  fringe(-e, e, 12.92, MH + .2, .1, .34);
-  fringe(-e, -3.3, -20.08, 3.2, .08, .26);
+  fringe(-e, e, 12.92, MH + .2, -1, 1);
+  fringe(-e, -3.3, -20.08, 3.2, 1, .8);
   for (let x = -21; x <= 21.1; x += 7) box(m, x - .09, MH - .2, o, x + .09, MH - .04, o + .7);
   return m;
 }
