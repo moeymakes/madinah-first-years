@@ -73,6 +73,27 @@ fn dens(p: vec3f, gx: f32, gz: f32) -> f32 {
 }
 `;
 
+// ---------------------------------------------------------------- real relief for Uhud, Ayr and Sal' (stage 3)
+// Copernicus GLO-30 patches (data.js) placed in the world's composed geography: each massif's real summit sits where
+// the composition puts it, with horizontal distances scaled by k. Heights are metres above the oasis floor (603 m).
+// (after Madinah Horizon 3551cdb)
+const demPatch = (P, c, ll, off, sc) => {
+  const K = [Math.cos(24.5 * PI / 180) * 111320 * sc, 110574 * sc];
+  return /*wgsl*/`
+fn dem${off}(p: vec2f) -> vec2f {
+  let lon = ${ll[1]} + (p.x - (${c[0]}.)) / ${K[0].toFixed(1)}; let lat = ${ll[0]} - (p.y - (${c[1]}.)) / ${K[1].toFixed(1)};
+  let u = (lon - ${P.lon0}) / ${(P.lon1 - P.lon0).toFixed(5)}; let v = (${P.lat1} - lat) / ${(P.lat1 - P.lat0).toFixed(5)};
+  if (u <= 0. || v <= 0. || u >= 1. || v >= 1.) { return vec2f(0.); }
+  let g = vec2f(u * ${P.w - 1}., v * ${P.h - 1}.); let i = vec2u(g); let f = g - vec2f(i);
+  let k = ${off}u + i.x + i.y * ${P.w}u;
+  let hgt = mix(mix(DM[k], DM[k + 1u], f.x), mix(DM[k + ${P.w}u], DM[k + ${P.w + 1}u], f.x), f.y);
+  return vec2f(hgt, ss(0., .14, u) * ss(1., .86, u) * ss(0., .16, v) * ss(1., .84, v));
+}`;
+};
+const DEM_O2 = DEM_UHUD.w * DEM_UHUD.h, DEM_O3 = DEM_O2 + DEM_AYR.w * DEM_AYR.h;
+const W_DEM = demPatch(DEM_UHUD, [300, -4300], [24.5214, 39.6267], 0, .8) + demPatch(DEM_AYR, [-700, 4300], [24.381, 39.574], DEM_O2, .8)
+  + demPatch(DEM_SAL, [-600, -650], [24.4772, 39.5981], DEM_O3, .55);
+
 // ---------------------------------------------------------------- ground model (compute, load time)
 // One function for the whole 24 km world, sampled twice: 1 m over the near field and ~23 m over everything.
 // A = height, basalt, granite, wadi sand · B = hamlet ground, palm groves
@@ -81,6 +102,8 @@ struct U { n: vec4u, o: vec4f };
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var<storage, read_write> A: array<vec4f>;
 @group(0) @binding(2) var<storage, read_write> B: array<vec4f>;
+@group(0) @binding(3) var<storage, read> DM: array<f32>;
+${W_DEM}
 // scoria cones on the harrat: x, z, height, radius
 const CONES = array<vec4f, 8>(vec4f(1800., -600., 70., 260.), vec4f(2600., 900., 90., 320.), vec4f(1400., 1700., 55., 220.),
   vec4f(3200., -2200., 80., 300.), vec4f(900., 2600., 60., 240.), vec4f(2200., 2400., 75., 280.), vec4f(3800., 300., 95., 340.), vec4f(1100., 650., 35., 160.));
@@ -125,14 +148,18 @@ fn massif(p: vec2f, c: vec2f, ang: f32, L: f32, W: f32) -> f32 {
       lava = max(lava, ss(c.w, c.w * .7, d));
     }
   }
-  let uh = massif(p2, vec2f(300., -4300.), .12, 2800., 820.);
-  h += 730. * uh * (.32 + .68 * pow(ridged(p2, .0011), 1.4)) + 140. * uh * (ridged(p2 + 300., .0036) - .55) + 60. * uh * (fbm(vec3f(x * .009, 7., z * .009), 3) - .5);
-  let ay = massif(p2, vec2f(-700., 4300.), -.08, 2000., 620.);
-  h += 240. * ay * (.5 + .5 * ridged(p2 + 900., .0013));
+  // the real ridgelines from the DEM, with fine gullies and scree added below its ~90 m sampling
+  let U = dem0(p2); let Y = dem${DEM_O2}(p2);
+  // GLO-30 is a surface model: it holds the modern city's buildings (up to ~60 m), so only relief well above the plain
+  // is taken, and the plain itself is left to the oasis
+  let uh = ss(30., 150., U.x) * U.y; let ay = ss(30., 150., Y.x) * Y.y;
+  h += U.x * U.y * ss(20., 70., U.x) + uh * (28. * (ridged(p2 + 300., .006) - .55) + 14. * (fbm(vec3f(x * .02, 7., z * .02), 3) - .5));
+  h += Y.x * Y.y * ss(20., 70., Y.x) + ay * (22. * (ridged(p2 + 900., .006) - .55) + 10. * (fbm(vec3f(x * .02, 9., z * .02), 3) - .5));
   // Jabal Sal', a low rocky hill close to the north-west
-  let sl = massif(p2, vec2f(-600., -650.), .45, 430., 210.);
-  // basalt hill: crags on the crest and gullies down the flanks, so it never reads as a smooth dome
-  h += 85. * sl * (.3 + .7 * pow(ridged(p2 + 50., .006), 1.3)) + 34. * sl * (ridged(p2 + 90., .018) - .5) + 16. * sl * (ridged(p2 + 170., .045) - .5) + 10. * sl * (fbm(vec3f(x * .05, 19., z * .05), 2) - .5);
+  // Jabal Sal' from the DEM (only the hill: the plain around it in the patch is left to the oasis), crags and gullies
+  // below its sampling
+  let S = dem${DEM_O3}(p2) * vec2f(1., ss(430., 250., distance(p2, vec2f(-600., -650.)))); let sl = ss(6., 22., S.x) * S.y;
+  h += max(S.x - 6., 0.) * S.y + 16. * sl * (ridged(p2 + 170., .045) - .5) + 8. * sl * (fbm(vec3f(x * .05, 19., z * .05), 2) - .5);
   lava = max(lava, ss(0., .05, sl));
   gran = max(gran, ss(0., .08, uh + ay));
   let r = length(p2);
