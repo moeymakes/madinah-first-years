@@ -563,21 +563,22 @@ fn room(e: vec2f, d0: vec3f, o: vec2f, fl: f32, lit: vec3f, lamp: f32) -> vec3f 
     // the mosque courtyard: trodden earth strewn with small pebbles
     let peb = ss(.6, .8, C.c) * fk;
     alb = mix(alb, mix(vec3f(.46, .36, .25), vec3f(.55, .44, .31), A.c) * (.9 + .15 * Lg.b) * (1. - .12 * peb) + vec3f(.03, .025, .02) * ss(.75, .9, C.h) * fk, court * .97);
-    let bas = mix(vec3f(.026, .027, .03), vec3f(.055, .052, .05), ss(.45, .8, C.c)) * (.75 + .5 * mix(.5, F.h * C.h, fk));
+    // harrat basalt is grey-black (albedo about .06-.11), not brown: windblown dust settles only in the flat hollows
+    let bas = mix(vec3f(.062, .062, .066), vec3f(.105, .10, .098), ss(.4, .8, C.c)) * (.8 + .4 * mix(.5, F.h * C.h, fk));
     let lv = max(lava, ss(.01, .14, lava));
-    alb = mix(alb, mix(bas, vec3f(.40, .30, .20) * (.8 + .3 * B.h), flt * ss(.68, .9, Lg.a + .3 * B.c) * .5), lv);
+    alb = mix(alb, mix(bas, vec3f(.34, .28, .21) * (.8 + .3 * B.h), flt * ss(.72, .92, Lg.a + .3 * B.c) * .4), lv);
     var gra = select(mix(vec3f(.24, .18, .15), vec3f(.34, .26, .21), A.c), mix(vec3f(.46, .19, .10), vec3f(.62, .31, .17), A.c), far) * (.68 + .55 * B.h);
     gra = mix(gra, vec3f(.16, .11, .09), ss(.5, .75, fract(i.wp.y * .11 + A.h * 1.5)) * select(.45, 0., far));
     gra = mix(gra, gra * vec3f(.55, .5, .5), ss(.55, .8, B.c) * f32(far) * .5);
     alb = mix(alb, gra, sat(gran * 1.4) * (1. - .1 * flt));
     alb = mix(alb, vec3f(.52, .41, .29) * (.88 + .18 * C.c), ss(.05, .4, city) * .5);
-    alb = mix(alb, mix(mix(vec3f(.05, .048, .047), vec3f(.10, .09, .085), A.h) * (.75 + .5 * B.c), vec3f(.36, .27, .18), ss(.65, .85, B.c) * .3), lava * (1. - nk) * .9 * (1. - .45 * ss(1500., 6000., dist)));
+    alb = mix(alb, mix(mix(vec3f(.06, .06, .063), vec3f(.105, .10, .097), A.h) * (.75 + .5 * B.c), vec3f(.30, .25, .20), ss(.7, .88, B.c) * .22), lava * (1. - nk) * .9 * (1. - .45 * ss(1500., 6000., dist)));
     let fam = mix(.32, .45, max(wadi, lava));
     alb *= mix(1., 1. - fam * .5 + fam * F.h, fk);
     bump = select(mix(.3, mix(.7, .9, lava), max(wadi, lava)), max(.55, lava * 1.3), far) * (1. - .9 * court); gloss = mix(.03, .16, lava * (1. - flt)) * ss(120., 20., dist);
   } else if (mat == 2) {
-    alb = mix(vec3f(.026, .027, .029), vec3f(.055, .05, .047), ss(.45, .75, C.c)) * (.6 + .8 * F.h);
-    alb = mix(alb, vec3f(.40, .28, .17), flt * ss(.75, .95, B.c) * .2); bump = 1.5; gloss = .1;
+    alb = mix(vec3f(.058, .058, .062), vec3f(.10, .095, .092), ss(.45, .75, C.c)) * (.7 + .6 * F.h);
+    alb = mix(alb, vec3f(.34, .28, .21), flt * ss(.75, .95, B.c) * .18); bump = 1.5; gloss = .1;
   } else if (mat == 3) {
     alb = mix(vec3f(.22, .17, .14), vec3f(.33, .26, .21), C.c) * (.65 + .55 * B.h); bump = 1.2;
   } else if (mat == 4) {
@@ -702,7 +703,9 @@ fn room(e: vec2f, d0: vec3f, o: vec2f, fl: f32, lit: vec3f, lamp: f32) -> vec3f 
   } else if (mat == 13) {
     alb = mix(vec3f(.38, .15, .04), vec3f(.24, .08, .03), hs(sd * 17.)) * (.8 + .3 * C.h); gloss = .35; bump = .6;
   } else if (mat == 14) {
-    alb = vec3f(.40, .30, .20) * (.8 + .35 * B.h) * (.85 + .25 * C.c); bump = .9; gloss = .02;
+    // ditch banks (aux: 0 at the waterline, 1 at the foot): heaped spoil, dark and damp towards the water
+    let wet = 1. - ss(.1, .7, i.ao);
+    alb = mix(vec3f(.36, .27, .18) * (.8 + .35 * B.h) * (.85 + .25 * C.c), vec3f(.13, .10, .07) * (.85 + .3 * C.h), wet); bump = .9; gloss = .02 + .12 * wet;
   } else if (mat == 16) {
     alb = vec3f(.24, .15, .08) * (.7 + .5 * C.c); bump = .7;
   }
@@ -772,7 +775,7 @@ fn grassSway(p: vec2f, h: f32, t: f32) -> vec2f {
       // date palm fronds are glaucous grey-green, not lime; each palm (keyed by its crown) has its own tint and its
       // own share of yellowing fronds
       let ph = hs(i.a.x * .37 + i.a.z * .71);
-      col = mix(vec3f(.085, .105, .06), vec3f(.15, .16, .10), s1) * mix(vec3f(.9, .97, 1.06), vec3f(1.1, 1., .78), ph);
+      col = mix(vec3f(.06, .08, .045), vec3f(.14, .15, .09), s1 * s1) * mix(vec3f(.9, .97, 1.06), vec3f(1.1, 1., .78), ph);
       col = mix(col, vec3f(.30, .22, .11) * (.8 + .4 * s1), step(s2, ph * .22) * .75);
       pr = vec4f(1., .55, 0., 0.); fold = .5; }
     case 1 { col = mix(vec3f(.20, .14, .075), vec3f(.28, .20, .10), s1); pr = vec4f(1., .3, 0., 0.); fold = .3; }
@@ -833,7 +836,8 @@ fn leafCov(i: LO) -> f32 {
   let am = (amb(n, vv.y) + amb(-n, vv.y) * i.pr.y * .45) * (.35 + .65 * aov);
   var c = E * (alb * max(ndl, 0.) + trc * tr) + alb * am;
   let H = normalize(V + L);
-  c += E * pow(sat(dot(n, H)), 18.) * .12;
+  // date palm leaflets carry a waxy cuticle: tight bright glints
+  c += E * pow(sat(dot(n, H)), 32.) * mix(.12, .3, step(.5, i.pr.x));
   c += E * trc * i.pr.y * pow(sat(dot(-V, L)), 4.) * .8;
   return outA(c, alb * am, alb, i.wp, alpha);
 }
@@ -893,6 +897,21 @@ struct VO { @builtin(position) cp: vec4f, @location(0) d: vec3f };
     let cov = ss(.58, .84, n) * ss(.03, .2, rd.y) * (1. - ss(.35, .9, rd.y));
     let lit = (CLOUDSUN * (.05 + .45 * pow(max(mu, 0.), 4.)) + g.amb.xyz * .9) * (.75 + .5 * fbm(vec3f(r * 7., 2.), 2));
     c = mix(c, lit, cov * .5);
+  }
+  // scattered altocumulus 3 km up (after Madinah Horizon 02909b3): fbm density on the cloud plane, self-shadowed by
+  // sampling a little toward the sun, lit by the sun at that height plus sky light, fading into the sky with distance
+  if (rd.y > .008) {
+    let tpl = (3000. - g.cam.y) / rd.y;
+    let pp = g.cam.xz + rd.xz * tpl;
+    let uv = pp * .00013 + vec2f(g.cam.w * .0008, g.cam.w * .0003);
+    let dn = fbm(vec3f(uv, 4.2), 5) + .25 * (fbm(vec3f(uv * 3.3, 7.7), 3) - .5);
+    let cov = ss(.57, .76, dn) * ss(.008, .06, rd.y) * ss(70000., 20000., tpl);
+    if (cov > .001) {
+      let dl = fbm(vec3f(uv + normalize(L.xz) * .05, 4.2), 4);
+      let sh = exp(-ss(.5, .85, dl) * 2.4);
+      let lit = CLOUDSUN * (.22 + 1.1 * pow(max(mu, 0.), 4.)) * sh + g.amb.xyz * (.8 + .4 * ss(.6, .9, dn));
+      c = mix(c, mix(lit, c, ss(15000., 70000., tpl) * .7), cov * .92);
+    }
   }
   c += mix(SUNC * 9., vec3f(2.4, 2.4, 2.2), NIGHT) * ss(mix(.99988, .99975, NIGHT), mix(.99994, .99982, NIGHT), mu);
   // stars: one soft point per sky cell, a pixel or two wide, so they hold still as the camera moves

@@ -489,6 +489,15 @@ function makeWorld(D, T, NA, FAR, flyPts) {
       const v = [[p0[0] - side[0] * .34, y0, p0[1] - side[1] * .34], [p0[0] + side[0] * .34, y0, p0[1] + side[1] * .34], [p1[0] + side[0] * .34, y1, p1[1] + side[1] * .34], [p1[0] - side[0] * .34, y1, p1[1] - side[1] * .34]];
       const q = v.map((pp) => water.v(...pp)); water.quad(q[0], q[1], q[2], q[3]);
     }
+    // the ditch is dug, its spoil heaped into low banks either side, so the water sits below the bank tops
+    const prof = [[-1.05, -.08], [-.66, .17], [-.46, .25], [-.33, -.04], [.33, -.04], [.46, .25], [.66, .17], [1.05, -.08]];
+    let prev = null;
+    for (let t = 0; t <= L; t += 1) {
+      const u = min(t, L) / L, x = mix(a[0], b[0], u), z = mix(a[1], b[1], u), y = gy(x, z) + .06;
+      const hk = (k) => .55 + .8 * fbm(x * .45 + k * 3.1, 4, z * .45, 2), row = prof.map(([o, h], k) => chan.v(x + side[0] * o * (k < 4 ? hk(9) * .3 + .85 : hk(8) * .3 + .85), y + (h > 0 ? h * hk(k < 4 ? 1 : 2) : h), z + side[1] * o * (k < 4 ? hk(9) * .3 + .85 : hk(8) * .3 + .85), [1, .8, .5, 0, 0, .5, .8, 1][k]));
+      if (prev) for (let k = 0; k < prof.length - 1; k++) if (k !== 3) chan.quad(prev[k], prev[k + 1], row[k + 1], row[k]);
+      prev = row;
+    }
   }
   for (const W of WELLS) {
     const y = gy(...W);
