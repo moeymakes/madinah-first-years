@@ -6,13 +6,36 @@ Built with the `worldsmith` skill (`/home/moey/.shared/skills/worldsmith`), star
 ## State (update after every step)
 
 - Phase: realism stages 1-3 (brief: /home/moey/.config/Claude/side-session-notes/local_e46bf3a1-465b-49b7-b617-a09a30fa0fa1/realism-stages-brief.md).
-  Stage 1 in progress on branch `realism-s1` (2026-11-18). Reference: Madinah Horizon stage-1 commits.
-- Baseline (live build = main a245c96), crop 0,.5,1,1 (below the horizon), 1920x1080, verify/s1-base:
-  dawn brightdetail 38.7, golden 34.6 (day mean 36.6), clip 0.00, flatwhite max 7.38 (dawn pose 1: haze toward the sun).
-  Night brightdetail is noise (a handful of bright pixels), so the gate uses the two day times; night is checked for clip only.
-- Done on the branch, not yet measured/committed: GTAO + TAA (High/Medium), Hillaire sky (LUTs drive sky, sun colour,
-  sky ambient, aerial perspective), static far-oasis shadow map (far groves and hamlets).
-- Next: measure s1-a (GTAO+TAA+sky) and s1-b (+ far shadows), then house massing, interior windows, area tint.
+- **Stage 1: shipped 2026-11-18** (branch `realism-s1`, fast-forwarded to main). Stage 2 next on `realism-s2`; its
+  work in progress is in `git stash` "s2-wip" (palms ported from Horizon ac0180e, colonnade of 3 x 8 trunks from
+  sources, bounded GI ported from Horizon 8246d13): pop it onto `realism-s2`, build, capture, measure.
+
+### Stage 1 gate report (crop 0,.5,1,1 below the horizon, 1920x1080, all six poses at each Time)
+
+| Gate | Live build (verify/s1-base) | Stage 1 (verify/s1-i) | Result |
+|---|---|---|---|
+| brightdetail, day mean (dawn, golden) | 36.6 (38.7, 34.6) | 42.4 (48.7, 36.2) | +15.9%, pass (>= +15%) |
+| clip% max | 0.01 | 0.07 | pass (< 0.5) |
+| flatwhite% max | 7.38 (dawn pose 1) | 0.69 | pass (< 2) |
+| GPU, 60 s flight 2560x1440 High (verify/s1-gate/perf) | 6.17 avg (Nov 16) | 7.95 avg, p99 12.68, max 14.40 | pass (<= 11 / <= 16) |
+| console errors, index.html, 3 Times x High/Medium/Low | 0 | 0 (verify/s1-gate, re-run on the final build in verify/s1-final-idx) | pass |
+| menu preview phone/tablet/desktop | renders | renders, 0 errors (verify/s1-gate/menu) | pass |
+| index.html size | 99.8 KB | 122.6 KB (122,640 bytes) | pass (< 160 KB) |
+| critic (one round, sonnet, images only) | major | **major** | fail, shipped under the brief's rule |
+
+Night brightdetail is noise (a handful of bright pixels decide it), so the gate uses dawn and golden hour; night was
+checked for clipping (0.00%) and by eye.
+
+Critic majors and where they went: house beam ends floating in a dotted row (a real bug: the roof room's beam row spanned
+the whole house; fixed), night ground reading as daylit sand (fixed: moonlit Purkinje grade, lifted moon fill). Not
+stage 1, carried to stage 2: hall roof thatch tiling and identical columns, flat hall interior, brown lava (should be
+black basalt), the water channel. Stage 3: far terrain speckle and Uhud detail (real DEM). The two fixes were measured
+(numbers above) but not re-reviewed by a second critic round, to stay inside the usage window.
+
+What moved the numbers (day brightdetail): GTAO+TAA+Hillaire sky 36.6 -> 39.5; houses, openings and tint 40.1; post-TAA
+sharpen 1.25 41.4, 1.8 42.4; raising exposure lowered it (dawn .95->1.02, golden .74->.84 gave 38.4, reverted); the
+far-oasis shadow map left the pose metrics unchanged (its area is beyond the poses) but darkens grove floors seen from
+the air, as a 9 degree sun should (a 12 m palm throws a ~75 m shadow).
 
 ## Before realism (2026-11-16 delivery)
 
@@ -38,7 +61,7 @@ Built with the `worldsmith` skill (`/home/moey/.shared/skills/worldsmith`), star
 | Minarets, domes, minbar decoration | none in this period | none | known |
 | Rooms of the Prophet's ﷺ household | adjoined the mosque, mostly on the east side; mud brick and palm stalks; low ceilings | a row of plain closed low rooms outside the east wall, no doors or openings shown | location approximate; form a guess; interiors deliberately not shown |
 | Utum (atam) | stone and mud fortified tower-houses, square in plan, multi-storey, one per clan | square tapering towers of coursed stone, about 12 m, small slits, a parapet | form a guess |
-| Houses | mud brick, flat roofs of palm trunks and fronds | single-storey flat-roofed houses, some with a roof room or a yard, beam ends showing | guess within the known materials |
+| Houses | mud brick, flat roofs of palm trunks and fronds | single-storey flat-roofed houses, some with a roof room (outside mud stair) or a yard (frond shelter), two-storey ones, palm-wood beam ends, lintels and posts, frond shades (arish) on palm posts with a mud bench; doors and small high windows open onto dim rooms, some lit by an oil lamp at night; render clay and age vary by neighbourhood | guess within the known materials (realism stage 1) |
 | Harrat | Madinah lies between lava fields: Harrat Waqim east, Harrat al-Wabara west, Harrat Rahat south | black basalt east (near) and south and west (far) | known |
 | Uhud | about 4-5 km north, a long red granite massif | far ridge 4.3 km north, about 380 m relief | known, distance compressed |
 | Jabal Sal' | a hill just north-west of the mosque | low dark hill 1 km north-west | position composed |
