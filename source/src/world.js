@@ -228,7 +228,7 @@ function meshHouse(w, d, h, kind) {
   }
   if (kind === 1) {
     box(m, -hw + .3, h, -hd + .3, -hw + 3.6, h + 2.4, -hd + 3.4); box(m, -hw + .24, h + 2.4, -hd + .24, -hw + 3.66, h + 2.66, -hd + 3.46);
-    beams(h + 2.66);
+    for (let x = -hw + .9; x < -hw + 3.4; x += 1.1) box(m, x - .09, h + 2.2, -hd + .05, x + .09, h + 2.38, -hd + .3, 0, PALMWOOD);
     // outside stair up the east flank: a solid mud flight rising toward the back
     const n = Math.ceil(h / .3);
     for (let k = 0; k < n; k++) box(m, hw, -.4, hd - .6 - (k + 1) * .34, hw + .9, (k + 1) * (h + .02) / n, hd - .6 - k * .34);

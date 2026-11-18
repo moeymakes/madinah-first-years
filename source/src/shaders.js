@@ -589,7 +589,8 @@ fn room(e: vec2f, d0: vec3f, o: vec2f, fl: f32, lit: vec3f, lamp: f32) -> vec3f 
     let render = ss(.55, .7, C.c + .2 * B.h);
     alb = mix(vec3f(.47, .32, .19), vec3f(.39, .26, .15), hs(row * 7.1 + floor(fu / .7 + row * .5)) * .6) * (.8 + .35 * C.h);
     alb = mix(alb * (1. - .45 * mortar * (1. - render) * bfade) * (.92 + .16 * F.h) * (.85 + .3 * hs(row * 3.3 + floor(fu / .7 + row * .5) * 1.7)), vec3f(.56, .41, .28) * (.75 + .4 * B.h), render * .12);
-    alb *= mix(.7, 1., ss(0., .6, fv)); bump = .22;
+    // sun-dried mud brick reflects about .35-.45; brighter, a wall in full sun becomes a flat white face
+    alb *= mix(.7, 1., ss(0., .6, fv)) * .84 * (1. - .22 * mortar * bfade); bump = .22;
   } else if (mat == 6) {
     // the mosque walls: mud brick under a worn mud render, on a footing of rough stones
     let row = floor(fv / .3); let bxi = floor(fu / .62 + row * .5); let bx = fract(fu / .62 + row * .5); let by = fract(fv / .3);
@@ -976,7 +977,7 @@ const W_POST = S_G + W_FS + /*wgsl*/`
 @group(0) @binding(3) var tR: texture_2d<f32>;
 @group(0) @binding(4) var tB: texture_2d<f32>;
 @group(0) @binding(5) var tDp: texture_depth${AA > 1 ? '_multisampled' : ''}_2d;
-const SHARP = 1.25;
+const SHARP = 1.8;
 fn tmap(x: vec3f) -> vec3f { return clamp((x * (2.51 * x + .03)) / (x * (2.43 * x + .59) + .14), vec3f(0.), vec3f(1.)); }
 @fragment fn fs(@builtin(position) fc: vec4f) -> @location(0) vec4f {
   let px = vec2i(fc.xy);
@@ -1007,6 +1008,9 @@ fn tmap(x: vec3f) -> vec3f { return clamp((x * (2.51 * x + .03)) / (x * (2.43 * 
   let q = uv - .5;
   c *= 1. - dot(q, q) * .45;
   c = tmap(c);
+  // moonlight is seen with the rods: colour drains and what remains leans blue (Purkinje shift), so warm sand
+  // does not read as daylit under a night sky
+  if (NIGHT > .5) { let ln = dot(c, LUMA); c = mix(c, vec3f(ln) * vec3f(.78, .88, 1.12), .62); }
   let l0 = dot(c, vec3f(.2126, .7152, .0722));
   let l = mix(l0, l0 * l0 * (3. - 2. * l0), .4);
   c *= l / max(l0, 1e-4);
