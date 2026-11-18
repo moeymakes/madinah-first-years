@@ -19,8 +19,9 @@ Built with the `worldsmith` skill (`/home/moey/.shared/skills/worldsmith`), star
   gate passes, critic included; if the hall is still major after the fix loops, stop and report with captures). Hall
   loop 1 committed on realism-s3 (853ff17): geometry, not textures (trunks with flared bases, girth swells, rough
   outlines; spliced tapering beams; uneven skewed joists; frond-tip fringe replacing the fascia; sun leak along joists
-  masked; contact shade at column feet; pebbles in patches). Full capture -> verify/s3-h (run in the background; check
-  its run.json errors and the metrics vs s3-g). Not yet done: perf/gate run (gate.sh), critic round, ship. Stopped
+  masked; contact shade at column feet; pebbles in patches). Full capture verify/s3-h done: 0 errors at all 3 Times
+  (dev, High); day brightdetail 45.4 (52.0, 38.9) vs s3-g 45.3, clip max 0.08, flatwhite max 0.99 (pose 5 sky haze,
+  as before). Not yet done: perf/gate run (gate.sh), critic round, ship. Stopped
   here at 84% of the 5-hour window; a resume cron is armed for after the reset.
 - Stage 3 content: real relief for Uhud, Jabal Ayr and Jabal Sal' from Copernicus GLO-30 (tile at
   /home/moey/Dev/research/madinah-horizon-data/dem/, packed by source/tools/pack-data.py into src/data.js; GLO-30 is a
