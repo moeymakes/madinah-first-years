@@ -598,7 +598,7 @@ fn room(e: vec2f, d0: vec3f, o: vec2f, fl: f32, lit: vec3f, lamp: f32) -> vec3f 
     alb *= mix(vec3f(.92, .95, 1.), vec3f(1.07, 1., .9), Mg.a);
     alb *= mix(vec3f(1.), vec3f(1.06, .95, .82), ss(.4, .7, Lg.a));
     alb = mix(alb, vec3f(.36, .26, .18) * (.8 + .4 * C.h), ss(.55, .75, B.c) * .35);
-    alb = mix(alb, vec3f(.50, .44, .35) * (.86 + .25 * B.h), wadi);
+    alb = mix(alb, vec3f(.47, .38, .27) * (.86 + .25 * B.h), wadi);
     alb = mix(alb, mix(vec3f(.21, .14, .085), vec3f(.12, .15, .055), ss(.35, .65, B.c)), irr * .85);
     // the mosque courtyard: trodden earth strewn with small pebbles
     let peb = ss(.58, .8, C.c * .6 + B.c * .25 + F.h * .15) * fk;
@@ -609,7 +609,8 @@ fn room(e: vec2f, d0: vec3f, o: vec2f, fl: f32, lit: vec3f, lamp: f32) -> vec3f 
     alb = mix(alb, mix(vec3f(.40, .30, .20), vec3f(.48, .37, .25), A.c) * (.9 + .15 * Lg.b) * (1. - .22 * peb) * (1. - .1 * rows) * mix(1., mix(.62, 1.25, hs(ph * 5.)), pebS) + vec3f(.05, .04, .03) * ss(.7, .9, C.h) * fk, court * .97);
     // harrat basalt is grey-black (albedo about .06-.11), not brown: windblown dust settles only in the flat hollows
     let bas = mix(vec3f(.056, .059, .066), vec3f(.096, .097, .10), ss(.4, .8, C.c)) * (.8 + .4 * mix(.5, F.h * C.h, fk));
-    let lv = ss(.1, .55, lava * (1.15 + .9 * (C.c - .5) + .6 * (B.c - .5)));
+    // the flow front's rising edge is basalt too, or it shows as a pale sand lip round the lobe
+    let lv = ss(.03, .4, lava * (1.15 + .9 * (C.c - .5) + .6 * (B.c - .5)));
     // fresh black flows and older rust-brown weathered sheets, in patches a few hundred metres across
     let basV = bas * mix(.78, 1.2, Lg.b) * mix(vec3f(1.), vec3f(1.25, 1.04, .86), ss(.6, .85, Mg.a) * .4);
     alb = mix(alb, mix(basV, vec3f(.34, .28, .21) * (.8 + .3 * B.h), flt * ss(.74, .94, Lg.a + .3 * B.c) * .28), lv);

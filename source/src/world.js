@@ -623,7 +623,7 @@ function makeWorld(D, T, NA, FAR, flyPts) {
     const lava = nearA(x, z, 1), gr = nearA(x, z, 2);
     const q = qRand();
     if (lava > .1 && rnd() < (sstep(.5, .95, lava) * .9 + (lava < .5 ? (fbm(x * .07, 5, z * .07, 2) > .52 ? .3 : .05) : 0)) * (1 - sstep(200, 246, max(abs(x), abs(z))))) {
-      const sc = (.2 + 1.4 * pow(rnd(), 3) + (rnd() < .04 && !nearPose(x, z, 22) ? rr(1.2, 2.6) : 0)) * (ny > .8 ? .75 : 1), bigR = sc > 1;
+      const sc = (.2 + 1.4 * pow(rnd(), 3) + (rnd() < .04 && !nearPose(x, z, 22) ? rr(.9, 1.7) : 0)) * (ny > .8 ? .75 : 1), bigR = sc > 1;
       solid(bigR ? 5 : 4, x - T.wn[k] * sc * .3, y - ny * sc * .3, z - T.wn[k + 2] * sc * .3, sc, q, 2, rnd(), bigR ? 0 : 110, 0);
     } else if (gr > .3 && rnd() < gr * .25) {
       const sc = .3 + 1.3 * pow(rnd(), 2);
