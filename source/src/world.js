@@ -165,7 +165,7 @@ function meshMosqueTimber() {
   const log = (x0, z0, x1, z1, y, r) => m.tube([[x0, y, z0], [(x0 + x1) / 2, y - r * .3, (z0 + z1) / 2], [x1, y, z1]], r, 6, false, () => .8);
   // three porticoes of eight trunks each (6.1 m bays), a trunk beam along each row, stalk joists across
   for (const z of [21.4, 17.8, 14.2]) { for (let k = 0; k < 8; k++) col(-21.35 + k * 6.1 + rr(-.25, .25), z + rr(-.15, .15), 3.36); log(-MW + .3, z, MW - .3, z, 3.34, .19); }
-  for (let x = -24; x <= 24.1; x += 1.6) log(x, 13.1, x, MW - .3, 3.47, .065);
+  for (let x = -24; x <= 24.1; x += 1.6) log(x + rr(-.15, .15), 13.1, x + rr(-.15, .15), MW - .3, 3.45, rr(.075, .1));
   for (let x = -22.9; x <= -5; x += 4.5) col(x + rr(-.2, .2), -21.2, 2.92);
   log(-MW + .3, -21.2, -3.4, -21.2, 2.9, .15);
   for (let x = -24; x <= -3.5; x += 1.6) log(x, -MW + .3, x, -20.2, 3.02, .06);
@@ -622,7 +622,7 @@ function makeWorld(D, T, NA, FAR, flyPts) {
     if (max(abs(x), abs(z)) > 248 || nearFly(x, z, 2.5) || nearPose(x, z, 2.5) || blocked(x, z, .5)) continue;
     const lava = nearA(x, z, 1), gr = nearA(x, z, 2);
     const q = qRand();
-    if (lava > .1 && rnd() < (sstep(.5, .95, lava) * .9 + (lava < .5 ? .35 : 0)) * (1 - sstep(200, 246, max(abs(x), abs(z))))) {
+    if (lava > .1 && rnd() < (sstep(.5, .95, lava) * .9 + (lava < .5 ? (fbm(x * .07, 5, z * .07, 2) > .52 ? .3 : .05) : 0)) * (1 - sstep(200, 246, max(abs(x), abs(z))))) {
       const sc = (.2 + 1.4 * pow(rnd(), 3) + (rnd() < .04 && !nearPose(x, z, 22) ? rr(1.2, 2.6) : 0)) * (ny > .8 ? .75 : 1), bigR = sc > 1;
       solid(bigR ? 5 : 4, x - T.wn[k] * sc * .3, y - ny * sc * .3, z - T.wn[k + 2] * sc * .3, sc, q, 2, rnd(), bigR ? 0 : 110, 0);
     } else if (gr > .3 && rnd() < gr * .25) {

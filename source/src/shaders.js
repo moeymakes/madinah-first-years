@@ -109,7 +109,7 @@ fn massif(p: vec2f, c: vec2f, ang: f32, L: f32, W: f32) -> f32 {
   let lf = x - lavaFront(z) - 7. * (fbm(vec3f(x * .02, 3., z * .02), 2) - .5);
   // the near lava is a lobe that ends inside the walkable land, so the edge of the detailed ground never cuts it
   let lob = (length((p2 - vec2f(176., -10.)) / vec2f(58., 175.)) - 1.) * 70. + 70. * (fbm(vec3f(x * .011, 23., z * .011), 3) - .5);
-  let lavN = ss(-1.5, 3.5, lf) * ss(14., 2., lob) * ss(246., 228., x) * ss(246., 225., abs(z));
+  let lavN = ss(-1.5, 3.5, lf) * ss(26., 0., lob) * ss(246., 228., x) * ss(246., 225., abs(z));
   let lavF = ss(0., 380., x - 650. - 300. * sin(z * .0006) - 420. * (fbm(vec3f(x * .0012, 8., z * .0012), 3) - .5)) * ss(-2600., -1700., z);
   let lavS = ss(0., 600., x + z * .6 - 1900.);
   // Harrat al-Wabara beyond Wadi al-Aqiq to the west
@@ -562,14 +562,16 @@ fn room(e: vec2f, d0: vec3f, o: vec2f, fl: f32, lit: vec3f, lamp: f32) -> vec3f 
     alb = mix(alb, vec3f(.50, .44, .35) * (.86 + .25 * B.h), wadi);
     alb = mix(alb, mix(vec3f(.21, .14, .085), vec3f(.12, .15, .055), ss(.35, .65, B.c)), irr * .85);
     // the mosque courtyard: trodden earth strewn with small pebbles
-    let peb = ss(.6, .8, C.c) * fk;
+    let peb = ss(.58, .8, C.c * .6 + B.c * .25 + F.h * .15) * fk;
     let mqf = i.wp.xz - vec2f(${MQ[0]}., ${MQ[1]}.);
     let rows = ss(.25, .0, abs(fract(mqf.y / 1.15) - .5) - .22) * step(13.2, mqf.y) * step(abs(mqf.x), 24.) * (.5 + .5 * B.h);
     alb = mix(alb, mix(vec3f(.46, .36, .25), vec3f(.55, .44, .31), A.c) * (.9 + .15 * Lg.b) * (1. - .22 * peb) * (1. - .1 * rows) + vec3f(.05, .04, .03) * ss(.7, .9, C.h) * fk, court * .97);
     // harrat basalt is grey-black (albedo about .06-.11), not brown: windblown dust settles only in the flat hollows
     let bas = mix(vec3f(.062, .062, .066), vec3f(.105, .10, .098), ss(.4, .8, C.c)) * (.8 + .4 * mix(.5, F.h * C.h, fk));
     let lv = ss(.1, .55, lava * (1.15 + .9 * (C.c - .5) + .6 * (B.c - .5)));
-    alb = mix(alb, mix(bas, vec3f(.34, .28, .21) * (.8 + .3 * B.h), flt * ss(.72, .92, Lg.a + .3 * B.c) * .4), lv);
+    // fresh black flows and older rust-brown weathered sheets, in patches a few hundred metres across
+    let basV = bas * mix(.78, 1.2, Lg.b) * mix(vec3f(1.), vec3f(1.3, 1.05, .82), ss(.55, .8, Mg.a) * .6);
+    alb = mix(alb, mix(basV, vec3f(.34, .28, .21) * (.8 + .3 * B.h), flt * ss(.72, .92, Lg.a + .3 * B.c) * .4), lv);
     var gra = select(mix(vec3f(.24, .18, .15), vec3f(.34, .26, .21), A.c), mix(vec3f(.46, .19, .10), vec3f(.62, .31, .17), A.c), far) * (.68 + .55 * B.h);
     gra = mix(gra, vec3f(.16, .11, .09), ss(.5, .75, fract(i.wp.y * .11 + A.h * 1.5)) * select(.45, 0., far));
     gra = mix(gra, gra * vec3f(.55, .5, .5), ss(.55, .8, B.c) * f32(far) * .5);
@@ -675,7 +677,7 @@ fn room(e: vec2f, d0: vec3f, o: vec2f, fl: f32, lit: vec3f, lamp: f32) -> vec3f 
   } else if (mat == 9) {
     // roof of the prayer hall: palm stalks laid side by side underneath, mud on top, ragged frond ends at the edge
     // underneath: palm fronds laid over the joists, each a midrib with leaflets slanting off it, mud showing between
-    let fu3 = i.op.x * 2.6 + .4 * sin(i.op.z * .9 + floor(i.op.x * 2.6)); let fi = floor(fu3); let fx = fract(fu3) - .5;
+    let crs = floor(i.op.z / 3.2 + hs(floor(i.op.x / 4.)) * .9); let fu3 = i.op.x * 2.6 + i.op.z * (hs(crs * 4.1) - .5) * .9 + .4 * sin(i.op.z * .9 + floor(i.op.x * 2.6)) + crs * 1.37; let fi = floor(fu3) + crs * 31.; let fx = fract(fu3) - .5;
     let sl = 2.6 + 1.6 * hs(fi * 5.3); let sz = i.op.z + hs(fi * 2.9) * 4.; let si = floor(sz / sl); let sv = fract(sz / sl);
     let dir = select(-1., 1., hs(fi * 1.3 + si * 7.7) > .5);
     let lf = fract(dir * i.op.z * 5.5 + abs(fx) * (2.6 + 1.2 * hs(fi + si)) + hs(fi * 1.7 + si) * 9.);
@@ -704,7 +706,9 @@ fn room(e: vec2f, d0: vec3f, o: vec2f, fl: f32, lit: vec3f, lamp: f32) -> vec3f 
       let ry = i.op.y * (1.8 + 1.6 * cid) + .55 * sin(i.op.y * (.9 + cid) + cid * 17.) + .25 * sin(i.op.y * 4.3 + cid * 5.) + cid * 5.;
       let ring = ss(.0, .08, abs(fract(ry + .06 * cos(ang * TAU + hs(floor(ry)) * 6.)) - .5) - (.3 + .14 * hs(floor(ry) * 2.3 + cid))) * (.3 + .7 * hs(floor(ry) * 1.9 + cid));
       let fib = ss(.3, .7, fract(ang * 90. + .5 * sin(i.op.y * 3. + cid * 9.)));
-      alb = mix(vec3f(.40, .30, .19), vec3f(.30, .22, .14), cid) * (1. - .12 * fib * bfade) * (1. - .25 * ring * bfade) * (.82 + .36 * C.h);
+      let stub = fract(ry + .06 * cos(ang * TAU + hs(floor(ry)) * 6.));
+      alb = mix(vec3f(.40, .30, .19), vec3f(.30, .22, .14), cid) * (1. - .16 * fib * bfade) * (1. - .2 * ring * bfade) * (.82 + .36 * C.h);
+      alb *= mix(1., .62 + .5 * ss(0., .8, stub), bfade * (.5 + .5 * hs(floor(ry) * 3.7 + cid)));
       alb *= mix(vec3f(.72, .66, .6), vec3f(1.), ss(.2, 1.4, i.op.y)) * mix(1., 1.12, ss(2., 3.2, i.op.y) * hs(cid * 7.));
     }
     vao = mix(select(.55, .82, mat == 19), 1., ss(0., 2., i.op.y - sd * 37.)); bump = .8;
