@@ -160,11 +160,13 @@ function meshMosqueWalls(L) {
 function meshMosqueTimber() {
   rseed(400);
   const m = new Mesh();
-  const col = (x, z, h) => { const lx = rr(-.06, .06), lz = rr(-.06, .06), s = rr(.9, 1.1); m.tube([[x, -.25, z], [x, .25, z], [x + lx * .5, h * .5, z + lz * .5], [x + lx, h, z + lz]], (k) => [.3, .25, .21, .18][k] * s, 12, false, (k) => [.55, .7, .85, 1][k]); };
+  // whole trunks are never straight or alike: each leans, bows a little at mid-height and has its own girth
+  const col = (x, z, h) => { const lx = rr(-.12, .12), lz = rr(-.1, .1), s = rr(.85, 1.2), bx = rr(-.06, .06), bz = rr(-.06, .06); m.tube([[x, -.25, z], [x, .25, z], [x + lx * .45 + bx, h * .5, z + lz * .45 + bz], [x + lx, h, z + lz]], (k) => [.3, .25, .21, .18][k] * s, 12, false, (k) => [.55, .7, .85, 1][k]); };
   const log = (x0, z0, x1, z1, y, r) => m.tube([[x0, y, z0], [(x0 + x1) / 2, y - r * .3, (z0 + z1) / 2], [x1, y, z1]], r, 6, false, () => .8);
-  for (const z of [21.4, 17.8, 14.2]) { for (let x = -21.6; x <= 21.7; x += 3.6) col(x, z, 3.36); log(-MW + .3, z, MW - .3, z, 3.34, .17); }
+  // three porticoes of eight trunks each (6.1 m bays), a trunk beam along each row, stalk joists across
+  for (const z of [21.4, 17.8, 14.2]) { for (let k = 0; k < 8; k++) col(-21.35 + k * 6.1 + rr(-.25, .25), z + rr(-.15, .15), 3.36); log(-MW + .3, z, MW - .3, z, 3.34, .19); }
   for (let x = -24; x <= 24.1; x += 1.6) log(x, 13.1, x, MW - .3, 3.47, .065);
-  for (let x = -23.4; x <= -5; x += 3.6) col(x, -21.2, 2.92);
+  for (let x = -22.9; x <= -5; x += 4.5) col(x + rr(-.2, .2), -21.2, 2.92);
   log(-MW + .3, -21.2, -3.4, -21.2, 2.9, .15);
   for (let x = -24; x <= -3.5; x += 1.6) log(x, -MW + .3, x, -20.2, 3.02, .06);
   return m;
@@ -417,6 +419,10 @@ function makeWorld(D, T, NA, FAR, flyPts) {
       leaf(big, cx, cy + .25, cz, len, off + f * 2.39996 + rr(-.12, .12), tilt, .42 * len / 4, H, 0, rnd(), rnd(), clamp(mix(.38, 1, t) + rr(-.1, .1), 0, 1));
     }
     if (!young) for (let f = 2 + (rnd() * 3 | 0); f > 0; f--) leaf(big, cx, cy - .3, cz, rr(2.6, 3.6), rnd() * TAU, rr(2.5, 2.9), .28, H, 1, rnd(), rnd(), .3);
+    // a fuller skirt of dead fronds on tall untended palms, from a position hash so the shared random stream (and
+    // with it the layout of everything placed after this palm) stays unchanged
+    const hr = (k) => { const v = sin(x * 12.9898 + z * 78.233 + k * 37.719) * 43758.5453; return v - floor(v); };
+    if (!young && H > 9) for (let f = (hr(0) * 5) | 0; f > 0; f--) leaf(big, cx, cy - .4 - hr(f) * .6, cz, 2.6 + hr(f + 9) * 1.2, hr(f + 19) * TAU, 2.4 + hr(f + 29) * .55, .28, H, 1, hr(f + 39), hr(f + 49), .3);
     if (!young && H > 6.5) for (let k = 3 + (rnd() * 3 | 0); k > 0; k--) { const a = rnd() * TAU; solid(3, cx + cos(a) * .55, cy - .75 - rnd() * .3, cz + sin(a) * .55, rr(.2, .27), yawQ(rnd() * TAU), 13, rnd(), 80, H); }
     shadeSky(cx - 2.5, cz - 2.5, cx + 2.5, cz + 2.5, cy, .22 / 3);
   };
