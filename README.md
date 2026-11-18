@@ -12,7 +12,7 @@ Date-palm groves inside mud-brick garden walls, wells and earthen ditches, flat-
 tower-houses, the black lava of the harrat, a sandy wadi with acacias, and at the heart of it a very simple
 mosque: mud-brick walls on a stone footing, an open earth courtyard, and a prayer hall of palm-trunk columns under
 a roof of palm fronds. Mount Uhud closes the northern horizon. Everything is made by code: no images, no 3D models,
-no sound files. The whole world is **one HTML file** of about 100 KB.
+no sound files. The whole world is **one HTML file** of about 145 KB.
 
 **This is an artistic reconstruction, not an exact one.** The sources agree on the materials and the rough size of
 the first mosque, and on the lava fields, the wadis and Uhud around the oasis. Most other details are informed guesses:

@@ -30,6 +30,11 @@ Built with the `worldsmith` skill (`/home/moey/.shared/skills/worldsmith`), star
     calmer ceiling; leaflets hanging through the mat; moon patches dropped (thin streaks); court mottle at 3-14 m
     scale (the 0.2 m scale and the court's sand normals both showed a tiled swirl).
   - Loop 4 (86636bf): night court bounce into the hall and onto the ceiling; moonlit grade cooler and bluer.
+- **2026-11-19 ~10:00 AEDT: stages 2 and 3 SHIPPED by Moey's decision, with the prayer-hall critic major still
+  open** (his answer, relayed by the coordinating session: "Madinah First Years 2+3"). main fast-forwarded
+  6ad6df1..46406a5 (realism-s3 as built, loop 4), live page byte-identical to index.html (sha256 571123f6...).
+  README screenshots retaken at golden hour from the shipped index.html (verify/ship-s3/t1, 0 console errors).
+  Open majors carried live: the prayer hall (critic round 5), plus the stage-1 items in verify/s3-hall-critic.md.
 - Next if the hall is resumed (from round 5, still unaddressed): the ceiling needs relief, not albedo (sagging
   bundles between joists as geometry, light leaking between them); trunks need per-column pattern scale, contrast
   and some unscarred trunks (one lattice on every trunk reads as a decal); the floor needs grain at the trunks'
