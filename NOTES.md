@@ -15,6 +15,13 @@ Built with the `worldsmith` skill (`/home/moey/.shared/skills/worldsmith`), star
   (2026-11-19 ~01:50 AEDT). The coordinating session said: if stage 2 cannot ship, do not ship it and go on to stage 3
   on the branch. Shipping stage 3 would ship stage 2 with it, so nothing on these branches goes live until Moey
   decides on stage 2. All gates but the critic pass (table below).
+- **2026-11-19 ~04:35 AEDT, hall fix in progress** (Moey: "Fix prayer hall first"; ship realism-s3 only when every
+  gate passes, critic included; if the hall is still major after the fix loops, stop and report with captures). Hall
+  loop 1 committed on realism-s3 (853ff17): geometry, not textures (trunks with flared bases, girth swells, rough
+  outlines; spliced tapering beams; uneven skewed joists; frond-tip fringe replacing the fascia; sun leak along joists
+  masked; contact shade at column feet; pebbles in patches). Full capture -> verify/s3-h (run in the background; check
+  its run.json errors and the metrics vs s3-g). Not yet done: perf/gate run (gate.sh), critic round, ship. Stopped
+  here at 84% of the 5-hour window; a resume cron is armed for after the reset.
 - Stage 3 content: real relief for Uhud, Jabal Ayr and Jabal Sal' from Copernicus GLO-30 (tile at
   /home/moey/Dev/research/madinah-horizon-data/dem/, packed by source/tools/pack-data.py into src/data.js; GLO-30 is a
   surface model holding the modern city's buildings, so only relief 20+ m above the plain is used, and Sal' is masked
