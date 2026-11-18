@@ -94,10 +94,16 @@ const DEM_O2 = DEM_UHUD.w * DEM_UHUD.h, DEM_O3 = DEM_O2 + DEM_AYR.w * DEM_AYR.h;
 const W_DEM = demPatch(DEM_UHUD, [300, -4300], [24.5214, 39.6267], 0, .8) + demPatch(DEM_AYR, [-700, 4300], [24.381, 39.574], DEM_O2, .8)
   + demPatch(DEM_SAL, [-600, -650], [24.4772, 39.5981], DEM_O3, .55);
 
+// Wadi al-Aqiq's real course (OpenStreetMap, data.js): x of the bed every 100 m of z, at the composed scale
+const W_AQ = /*wgsl*/`
+const AQ = array<f32, ${AQIQ.n}>(${AQIQ.x.map((v) => v + '.').join(', ')});
+fn aqX(z: f32) -> f32 { let t = clamp((z - (${AQIQ.z0}.)) / 100., 0., ${AQIQ.n - 1}.001); let i = u32(t); return mix(AQ[i], AQ[min(i + 1u, ${AQIQ.n - 1}u)], fract(t)); }
+`;
+
 // ---------------------------------------------------------------- ground model (compute, load time)
 // One function for the whole 24 km world, sampled twice: 1 m over the near field and ~23 m over everything.
 // A = height, basalt, granite, wadi sand · B = hamlet ground, palm groves
-const W_GROUND = W_SS + W_NOISE + /*wgsl*/`
+const W_GROUND = W_SS + W_NOISE + W_AQ + /*wgsl*/`
 struct U { n: vec4u, o: vec4f };
 @group(0) @binding(0) var<uniform> u: U;
 @group(0) @binding(1) var<storage, read_write> A: array<vec4f>;
@@ -124,6 +130,9 @@ fn massif(p: vec2f, c: vec2f, ang: f32, L: f32, W: f32) -> f32 {
   let wd = abs(x - wadiX(z)) + 6. * (fbm(vec3f(x * .03, 4., z * .03), 2) - .5);
   let wadi = ss(26., 8., wd) * ss(-1100., -700., z);
   h -= 2.3 * wadi;
+  // Wadi al-Aqiq: a broad sandy bed a few metres down, on its real course
+  let aqd = abs(x - aqX(z)) + 40. * (fbm(vec3f(x * .006, 31., z * .006), 2) - .5);
+  h -= 4. * ss(80., 25., aqd) * ss(-4600., -3900., z);
   var gran = 0.;
   for (var k = 0; k < 3; k++) {
     let c = KN[k]; let d = distance(p2, c.xy) / (c.w * 1.35); let kk = max(1. - d * d, 0.);
@@ -136,7 +145,7 @@ fn massif(p: vec2f, c: vec2f, ang: f32, L: f32, W: f32) -> f32 {
   let lavF = ss(0., 380., x - 650. - 300. * sin(z * .0006) - 420. * (fbm(vec3f(x * .0012, 8., z * .0012), 3) - .5)) * ss(-2600., -1700., z);
   let lavS = ss(0., 600., x + z * .6 - 1900.);
   // Harrat al-Wabara beyond Wadi al-Aqiq to the west
-  let lavW = ss(0., 500., -x - 2300. - 260. * sin(z * .0007) - 380. * (fbm(vec3f(x * .0011, 18., z * .0011), 3) - .5)) * ss(-3600., -2600., z);
+  let lavW = ss(0., 500., aqX(z) - x - 300. - 380. * (fbm(vec3f(x * .0011, 18., z * .0011), 3) - .5)) * ss(-3600., -2600., z);
   let lavB = max(max(lavF, lavS), lavW);
   var lava = max(lavN, lavB);
   h += 6.5 * lava * (.8 + .4 * fbm(vec3f(x * .01, 6., z * .01), 2)) + 9. * lavB * (fbm(vec3f(x * .007, 14., z * .007), 3) - .5);
@@ -411,7 +420,7 @@ fn palmSway(b: vec2f, h: f32, t: f32) -> vec2f {
 }
 `;
 
-const S_B = S_G + W_ATMC + /*wgsl*/`
+const S_B = S_G + W_ATMC + W_AQ + /*wgsl*/`
 @group(0) @binding(0) var<uniform> g: G;
 @group(0) @binding(1) var sR: sampler;
 @group(0) @binding(2) var sC: sampler;
@@ -607,6 +616,9 @@ fn room(e: vec2f, d0: vec3f, o: vec2f, fl: f32, lit: vec3f, lamp: f32) -> vec3f 
     gra = mix(gra, gra * vec3f(.55, .5, .5), ss(.55, .8, B.c) * f32(far) * .5);
     alb = mix(alb, gra, sat(gran * 1.4) * (1. - .1 * flt));
     alb = mix(alb, vec3f(.52, .41, .29) * (.88 + .18 * C.c), ss(.05, .4, city) * .5);
+    // the far wadi beds on their real course: paler, finer sand with dark specks of acacia
+    let aqw = ss(80., 30., abs(i.wp.x - aqX(i.wp.z)) + 40. * (B.c - .5)) * (1. - nk) * ss(-4600., -3900., i.wp.z);
+    alb = mix(alb, mix(vec3f(.55, .46, .34), vec3f(.20, .17, .10), ss(.72, .9, C.c) * .6) * (.9 + .2 * B.h), aqw * .8);
     alb = mix(alb, mix(mix(vec3f(.06, .06, .063), vec3f(.105, .10, .097), A.h) * (.75 + .5 * B.c), vec3f(.30, .25, .20), ss(.7, .88, B.c) * .22), lava * (1. - nk) * .9 * (1. - .45 * ss(1500., 6000., dist)));
     let fam = mix(.32, .45, max(wadi, lava));
     alb *= mix(1., 1. - fam * .5 + fam * F.h, fk);

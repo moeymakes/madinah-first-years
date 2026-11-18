@@ -37,3 +37,26 @@ print('// scale) geography in shaders.js: each massif\'s real summit sits where 
 print(patch('DEM_UHUD', 24.495, 24.55, 39.57, 39.68, 112, 56, 590, 2))
 print(patch('DEM_AYR', 24.355, 24.42, 39.50, 39.62, 88, 48, 600, 2))
 print(patch('DEM_SAL', 24.466, 24.489, 39.586, 39.611, 40, 36, 595, 1))
+
+# Wadi al-Aqiq from OpenStreetMap (c) OpenStreetMap contributors, ODbL: ways 960090164 and 1235902746, fetched as
+# Nominatim geometry (optional argv[2..]: the saved JSON files). Packed as the course's east-west offset from the
+# mosque (x, metres east) every 100 m along z (south), in the world's composed scale AQS.
+if len(sys.argv) > 2:
+    import json, math
+    LAT0, LON0, AQS = 24.4672, 39.6111, .5
+    KX, KZ = math.cos(math.radians(LAT0)) * 111320, 110574
+    pts = []
+    for f in sys.argv[2:]:
+        for e in json.load(open(f)):
+            if e.get('osm_id') in (960090164, 1235902746):
+                pts += [((lo - LON0) * KX * AQS, -(la - LAT0) * KZ * AQS) for lo, la in e['geojson']['coordinates']]
+    pts.sort(key=lambda p: p[1])
+    z0, z1 = math.ceil(pts[0][1] / 100) * 100, math.floor(pts[-1][1] / 100) * 100
+    xs = []
+    for z in range(z0, z1 + 1, 100):
+        k = max(i for i in range(len(pts) - 1) if pts[i][1] <= z)
+        a, b = pts[k], pts[min(k + 1, len(pts) - 1)]
+        t = 0 if b[1] == a[1] else (z - a[1]) / (b[1] - a[1])
+        xs.append(round(a[0] + (b[0] - a[0]) * t))
+    print('// Wadi al-Aqiq: (c) OpenStreetMap contributors, ODbL (ways 960090164, 1235902746); x of the course every 100 m of z')
+    print(f"const AQIQ = {{ z0: {z0}, n: {len(xs)}, x: [{', '.join(map(str, xs))}] }};")
