@@ -565,13 +565,13 @@ fn room(e: vec2f, d0: vec3f, o: vec2f, fl: f32, lit: vec3f, lamp: f32) -> vec3f 
     let peb = ss(.58, .8, C.c * .6 + B.c * .25 + F.h * .15) * fk;
     let mqf = i.wp.xz - vec2f(${MQ[0]}., ${MQ[1]}.);
     let rows = ss(.25, .0, abs(fract(mqf.y / 1.15) - .5) - .22) * step(13.2, mqf.y) * step(abs(mqf.x), 24.) * (.5 + .5 * B.h);
-    alb = mix(alb, mix(vec3f(.46, .36, .25), vec3f(.55, .44, .31), A.c) * (.9 + .15 * Lg.b) * (1. - .22 * peb) * (1. - .1 * rows) + vec3f(.05, .04, .03) * ss(.7, .9, C.h) * fk, court * .97);
+    alb = mix(alb, mix(vec3f(.40, .30, .20), vec3f(.48, .37, .25), A.c) * (.9 + .15 * Lg.b) * (1. - .22 * peb) * (1. - .1 * rows) + vec3f(.05, .04, .03) * ss(.7, .9, C.h) * fk, court * .97);
     // harrat basalt is grey-black (albedo about .06-.11), not brown: windblown dust settles only in the flat hollows
-    let bas = mix(vec3f(.062, .062, .066), vec3f(.105, .10, .098), ss(.4, .8, C.c)) * (.8 + .4 * mix(.5, F.h * C.h, fk));
+    let bas = mix(vec3f(.056, .059, .066), vec3f(.096, .097, .10), ss(.4, .8, C.c)) * (.8 + .4 * mix(.5, F.h * C.h, fk));
     let lv = ss(.1, .55, lava * (1.15 + .9 * (C.c - .5) + .6 * (B.c - .5)));
     // fresh black flows and older rust-brown weathered sheets, in patches a few hundred metres across
-    let basV = bas * mix(.78, 1.2, Lg.b) * mix(vec3f(1.), vec3f(1.3, 1.05, .82), ss(.55, .8, Mg.a) * .6);
-    alb = mix(alb, mix(basV, vec3f(.34, .28, .21) * (.8 + .3 * B.h), flt * ss(.72, .92, Lg.a + .3 * B.c) * .4), lv);
+    let basV = bas * mix(.78, 1.2, Lg.b) * mix(vec3f(1.), vec3f(1.25, 1.04, .86), ss(.6, .85, Mg.a) * .4);
+    alb = mix(alb, mix(basV, vec3f(.34, .28, .21) * (.8 + .3 * B.h), flt * ss(.74, .94, Lg.a + .3 * B.c) * .28), lv);
     var gra = select(mix(vec3f(.24, .18, .15), vec3f(.34, .26, .21), A.c), mix(vec3f(.46, .19, .10), vec3f(.62, .31, .17), A.c), far) * (.68 + .55 * B.h);
     gra = mix(gra, vec3f(.16, .11, .09), ss(.5, .75, fract(i.wp.y * .11 + A.h * 1.5)) * select(.45, 0., far));
     gra = mix(gra, gra * vec3f(.55, .5, .5), ss(.55, .8, B.c) * f32(far) * .5);
@@ -685,7 +685,12 @@ fn room(e: vec2f, d0: vec3f, o: vec2f, fl: f32, lit: vec3f, lamp: f32) -> vec3f 
     let rib = 1. - ss(.03, .07, abs(fx));
     let ftone = mix(vec3f(.42, .31, .15), vec3f(.58, .45, .24), hs(fi * 3.1 + si * 1.9)) * mix(vec3f(1.), vec3f(.8, .8, .82), ss(.5, .8, B.h));
     let gap = ss(.06, 0., min(sv, 1. - sv)) * .6 + ss(.75, .95, C.c) * .35;
-    let under = mix(mix(mix(ftone * .62, ftone, leaflet * mix(.5, 1., bfade)), ftone * .85, rib * bfade), vec3f(.20, .15, .10), gap * bfade) * (.8 + .3 * C.h);
+    let fronds = mix(mix(mix(ftone * .62, ftone, leaflet * mix(.5, 1., bfade)), ftone * .85, rib * bfade), vec3f(.20, .15, .10), gap * bfade);
+    let sz2 = i.op.z * 13. + .5 * sin(i.op.x * .6 + crs * 3.); let sid = floor(sz2); let sf = fract(sz2) - .5;
+    let stk = mix(vec3f(.46, .35, .21), vec3f(.60, .48, .31), hs(sid * 1.3 + floor(i.op.x / 3.)));
+    let stalks = mix(stk * .8, mix(stk * (.72 + .4 * (1. - 4. * sf * sf)), vec3f(.13, .10, .07), ss(.36, .5, abs(sf)) * .8), bfade);
+    let fpat = ss(.35, .65, hs(crs * 7.3 + floor(i.op.x / 2.3 + .4 * sin(i.op.z * 1.3)) * 3.1) * .8 + .2 * C.c);
+    let under = mix(stalks, fronds, fpat) * (.8 + .3 * C.h);
     let eu = fu * 7. + 2.5 * sin(fu * 1.7) + 1.5 * sin(fu * 4.1);
     let edge = mix(vec3f(.36, .26, .13), vec3f(.48, .36, .19), hs(floor(eu) * 1.7)) * (.82 + .18 * ss(.0, .4, fract(eu))) * (.8 + .3 * F.h);
     alb = select(edge, under, on.y < -.5);
