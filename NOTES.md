@@ -11,6 +11,9 @@ Built with the `worldsmith` skill (`/home/moey/.shared/skills/worldsmith`), star
   porticoes of eight trunks (Muslim Heritage: "six or eight" per portico; the old model had 13), and bounded GI (after
   Horizon 8246d13), all unmeasured. Capture started into verify/s2-a. Paused at 81% of the 5-hour usage window;
   resume after the 20:00 AEDT reset.
+- s2-a measured (0 errors at 3 Times): day brightdetail 41.7 vs stage 1 42.4 (-1.7%, must hold or rise): dawn pose 6
+  128 -> 122 (GI and palms soften the aerial view), golden pose 2 (prayer hall) 21 -> 23. Find which of the three
+  features costs the dawn aerial before adding more.
 - Stage 2 still to do: measure s2-a vs verify/s1-i (same crop, day brightdetail must hold or rise); basalt albedo .06-.11
   with dust (critic: lava reads brown; Horizon 8246d13 did the same); hall roof thatch without tiling and with a few
   light gaps; clouds after Horizon 02909b3; water ditch cut into the ground with wet banks; critic round; gates; ship.
