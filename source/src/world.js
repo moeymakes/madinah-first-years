@@ -127,10 +127,12 @@ function buildFar(fh) {
 }
 
 // ---------------------------------------------------------------- procedural meshes
-// optional L collects the footprint x0 z0 x1 z1 and top for walking collision
-const box = (m, x0, y0, z0, x1, y1, z1, L) => {
+// optional L collects the footprint x0 z0 x1 z1 and top for walking collision; aux < 0 tags a house part for the
+// facade shader (PALMWOOD beams and posts, FROND mats)
+const PALMWOOD = -.3, FROND = -.6;
+const box = (m, x0, y0, z0, x1, y1, z1, L, aux = 1) => {
   const v = [[x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0], [x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]];
-  for (const f of [[0, 3, 2, 1], [4, 5, 6, 7], [0, 4, 7, 3], [1, 2, 6, 5], [3, 7, 6, 2], [0, 1, 5, 4]]) { const q = f.map((i) => m.v(...v[i])); m.quad(q[0], q[1], q[2], q[3]); }
+  for (const f of [[0, 3, 2, 1], [4, 5, 6, 7], [0, 4, 7, 3], [1, 2, 6, 5], [3, 7, 6, 2], [0, 1, 5, 4]]) { const q = f.map((i) => m.v(...v[i], aux)); m.quad(q[0], q[1], q[2], q[3]); }
   if (L) L.push(x0, z0, x1, z1, y1);
 };
 // surface of revolution: prof = [[radius, height, ao]...] bottom to top, seg sides
@@ -200,22 +202,49 @@ function meshUtum() {
   for (let k = -3; k <= 3; k += 2) for (const s of [-1, 1]) { box(m, k * .9 - .3, 11.6, s * w - .23, k * .9 + .3, 12.2, s * w + .23); box(m, s * w - .23, 11.6, k * .9 - .3, s * w + .23, 12.2, k * .9 + .3); }
   return m;
 }
-// flat-roofed mud-brick house: body, low parapet, palm-trunk beam ends under the roof line, door on local +z
+// flat-roofed mud-brick house: body, low parapet, palm-trunk beam ends under the roof line, door on local +z.
+// Each kind carries its own period details (forms are informed guesses within the known materials, see NOTES.md):
+// 0 a frond shade (arish) on palm posts over the door and a mud bench; 1 a roof room reached by an outside mud stair;
+// 2 a walled yard with a frond shelter in one corner; 3 two storeys with a second row of beam ends
 function meshHouse(w, d, h, kind) {
   const m = new Mesh(), hw = w / 2, hd = d / 2;
   box(m, -hw, -.4, -hd, hw, h, hd);
   const t = .26, ph = h + .55;
   box(m, -hw, h, -hd, hw, ph, -hd + t); box(m, -hw, h, hd - t, hw, ph, hd); box(m, -hw, h, -hd, -hw + t, ph, hd); box(m, hw - t, h, -hd, hw, ph, hd);
   for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) box(m, sx * hw - (sx > 0 ? .5 : 0), ph, sz * hd - (sz > 0 ? .5 : 0), sx * hw + (sx < 0 ? .5 : 0), ph + .25, sz * hd + (sz < 0 ? .5 : 0));
-  for (let x = -hw + .7; x < hw - .4; x += 1.1) for (const s of [-1, 1]) box(m, x - .1, h - .42, s * hd - (s < 0 ? .45 : 0), x + .1, h - .22, s * hd + (s > 0 ? .45 : 0));
-  box(m, -.8, 0, hd, -.62, 2.1, hd + .12); box(m, .62, 0, hd, .8, 2.1, hd + .12); box(m, -.95, 2.05, hd, .95, 2.28, hd + .2);
-  box(m, hw * .4 - .09, h - .05, -hd - .6, hw * .4 + .09, h + .1, -hd);
-  if (kind === 1) { box(m, -hw + .3, h, -hd + .3, -hw + 3.6, h + 2.4, -hd + 3.4); box(m, -hw + .24, h + 2.4, -hd + .24, -hw + 3.66, h + 2.66, -hd + 3.46); }
+  const beams = (y) => { for (let x = -hw + .7; x < hw - .4; x += 1.1) for (const s of [-1, 1]) box(m, x - .1, y - .42, s * hd - (s < 0 ? .45 : 0), x + .1, y - .22, s * hd + (s > 0 ? .45 : 0), 0, PALMWOOD); };
+  beams(h);
+  box(m, -.8, 0, hd, -.62, 2.1, hd + .12, 0, PALMWOOD); box(m, .62, 0, hd, .8, 2.1, hd + .12, 0, PALMWOOD); box(m, -.95, 2.05, hd, .95, 2.28, hd + .2, 0, PALMWOOD);
+  // roof spout of half a palm trunk
+  box(m, hw * .4 - .09, h - .05, -hd - .6, hw * .4 + .09, h + .1, -hd, 0, PALMWOOD);
+  if (kind === 0) {
+    // arish: a mat of fronds on two palm posts and a beam, in front of the door; a low mud bench along the wall
+    const z1 = hd + 1.8, x0 = -1.9, x1 = 1.9, yt = 2.35;
+    for (const x of [x0 + .1, x1 - .1]) m.tube([[x, -.3, z1], [x + .03, yt * .5, z1 + .02], [x, yt, z1]], (k) => [.12, .1, .09][k], 6, true, () => PALMWOOD);
+    box(m, x0, yt - .02, z1 - .1, x1, yt + .12, z1 + .1, 0, PALMWOOD);
+    for (let x = x0 + .3; x < x1; x += .7) box(m, x - .05, yt + .1, hd, x + .05, yt + .18, z1 + .15, 0, PALMWOOD);
+    box(m, x0 - .15, yt + .18, hd, x1 + .15, yt + .3, z1 + .35, 0, FROND);
+    box(m, 1.05, -.3, hd, hw - .5, .45, hd + .5);
+  }
+  if (kind === 1) {
+    box(m, -hw + .3, h, -hd + .3, -hw + 3.6, h + 2.4, -hd + 3.4); box(m, -hw + .24, h + 2.4, -hd + .24, -hw + 3.66, h + 2.66, -hd + 3.46);
+    beams(h + 2.66);
+    // outside stair up the east flank: a solid mud flight rising toward the back
+    const n = Math.ceil(h / .3);
+    for (let k = 0; k < n; k++) box(m, hw, -.4, hd - .6 - (k + 1) * .34, hw + .9, (k + 1) * (h + .02) / n, hd - .6 - k * .34);
+    box(m, hw, h - .3, hd - .6 - n * .34 - .02, hw + .9, h + .2, hd - .6 - n * .34 + .3);
+  }
   if (kind === 2) {
     const yd = 5.5, t = .22, wh = 2.1;
     box(m, -hw, -.4, hd, -hw + t * 2, wh, hd + yd); box(m, hw - t * 2, -.4, hd, hw, wh, hd + yd);
     box(m, -hw, -.4, hd + yd - t * 2, -.7, wh, hd + yd); box(m, .7, -.4, hd + yd - t * 2, hw, wh, hd + yd);
+    // a frond shelter in the yard's far corner, leaning on the yard walls
+    const sx0 = hw - t * 2 - 2.6, sz0 = hd + yd - t * 2 - 2.2;
+    m.tube([[sx0, -.3, sz0], [sx0, 1.95, sz0]], .08, 5, true, () => PALMWOOD);
+    box(m, sx0 - .1, 1.95, sz0 - .1, hw - t * 2, 2.05, hd + yd - t * 2, 0, PALMWOOD);
+    box(m, sx0 - .3, 2.05, sz0 - .3, hw - t * 2 + .05, 2.17, hd + yd - t * 2 + .05, 0, FROND);
   }
+  if (kind === 3) { beams(h * .52); box(m, -hw - .06, h * .52 - .2, -hd - .06, hw + .06, h * .52 - .08, hd + .06); }
   return m;
 }
 function meshFarHouse(w, h, d, step) {

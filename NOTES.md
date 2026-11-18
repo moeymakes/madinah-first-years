@@ -5,18 +5,22 @@ Built with the `worldsmith` skill (`/home/moey/.shared/skills/worldsmith`), star
 
 ## State (update after every step)
 
-- Phase: 7 (delivered). Stopping rule reached: 6 critic rounds used (iter-03, 07, 09, 11, 14, 15); the last verdict
-  is still "major" (verify/final/critic.md). Not passed; stopped by the round limit, as the brief says.
-- Last good capture: verify/iter-15 (dev.html), verify/final-min-high and verify/final-min-low (index.html at High and
-  at Low via --storage madinahFY=2): 0 console errors on all three.
-- Perf (iter-15, RTX 3070, 2560x1440, 60 s flight; other worlds may have been rendering on the same GPU):
-  GPU avg 6.17 ms, p99 6.70, max 7.04 -> passes the 11 ms target. Frame line is vsync-locked headless (16.67).
-- index.html: 97.4 kB (99,762 bytes), 39.7 kB gzipped. Load to menu about 3 s headless.
-- Watchdog: none (subagent run without CronCreate).
+- Phase: realism stages 1-3 (brief: /home/moey/.config/Claude/side-session-notes/local_e46bf3a1-465b-49b7-b617-a09a30fa0fa1/realism-stages-brief.md).
+  Stage 1 in progress on branch `realism-s1` (2026-11-18). Reference: Madinah Horizon stage-1 commits.
+- Baseline (live build = main a245c96), crop 0,.5,1,1 (below the horizon), 1920x1080, verify/s1-base:
+  dawn brightdetail 38.7, golden 34.6 (day mean 36.6), clip 0.00, flatwhite max 7.38 (dawn pose 1: haze toward the sun).
+  Night brightdetail is noise (a handful of bright pixels), so the gate uses the two day times; night is checked for clip only.
+- Done on the branch, not yet measured/committed: GTAO + TAA (High/Medium), Hillaire sky (LUTs drive sky, sun colour,
+  sky ambient, aerial perspective), static far-oasis shadow map (far groves and hamlets).
+- Next: measure s1-a (GTAO+TAA+sky) and s1-b (+ far shadows), then house massing, interior windows, area tint.
+
+## Before realism (2026-11-16 delivery)
+
+- Phase 7 delivered. Stopping rule reached: 6 critic rounds; the last verdict "major" (verify/final/critic.md).
+- Perf (iter-15, 2560x1440, 60 s flight): GPU avg 6.17 ms, p99 6.70, max 7.04. index.html 97.4 kB.
 - Open items from the last critic: the mosque is not legible from the air, lava reads brown and its lobe edge
   looks cut out, the wadi glitters, the hall columns and thatch read as manufactured, far groves still read as a
-  planted pattern, posterised shadow edges at the low sun, tiny window openings. Not done: touch controls and the
-  Medium level were not re-tested; Low shows a few floating grass blades in pose 1.
+  planted pattern, posterised shadow edges at the low sun, tiny window openings.
 
 ## What is reasonably known, and what is a guess
 
