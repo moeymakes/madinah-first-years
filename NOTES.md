@@ -7,18 +7,54 @@ Built with the `worldsmith` skill (`/home/moey/.shared/skills/worldsmith`), star
 
 - Phase: realism stages 1-3 (brief: /home/moey/.config/Claude/side-session-notes/local_e46bf3a1-465b-49b7-b617-a09a30fa0fa1/realism-stages-brief.md).
 - **Stage 1: shipped 2026-11-18 ~17:15 AEDT** (main 6ad6df1, live page byte-identical to the build).
-- Stage 2 on branch `realism-s2`: commit 345762b holds palms (after Horizon ac0180e), the prayer hall as three
-  porticoes of eight trunks (Muslim Heritage: "six or eight" per portico; the old model had 13), and bounded GI (after
-  Horizon 8246d13), all unmeasured. Capture started into verify/s2-a. Paused at 81% of the 5-hour usage window;
-  resume after the 20:00 AEDT reset.
-- s2-a measured (0 errors at 3 Times): day brightdetail 41.7 vs stage 1 42.4 (-1.7%, must hold or rise): dawn pose 6
-  128 -> 122 (GI and palms soften the aerial view), golden pose 2 (prayer hall) 21 -> 23. Find which of the three
-  features costs the dawn aerial before adding more.
-- Stage 2 still to do: measure s2-a vs verify/s1-i (same crop, day brightdetail must hold or rise); basalt albedo .06-.11
-  with dust (critic: lava reads brown; Horizon 8246d13 did the same); hall roof thatch without tiling and with a few
-  light gaps; clouds after Horizon 02909b3; water ditch cut into the ground with wet banks; critic round; gates; ship.
-- Stage 3 after that: Copernicus GLO-30 / SRTM terrain, OSM positions (ODbL attribution in the README), photo-calibrated
-  colours via look-metrics, page < 160 KB.
+- **Stage 2: stopped at the fix-loop cap, not shipped** (2026-11-18 ~21:45 AEDT). Branch `realism-s2` at the s2-k
+  commit holds it all; main and the live page are still stage 1. Reason: after 4 fix loops on the prayer hall the
+  critic still rates its surfaces major (round 5, verify/s2-k/critic.md), and the hall is the stage-2 hero, so the
+  brief's ship-with-out-of-scope-majors rule does not apply. Every metric beats live (table below).
+- **Stage 3: not started.** It would build on the unshipped stage 2. Data ready for it: the Copernicus GLO-30 tile
+  N24_E039 at /home/moey/Dev/research/madinah-horizon-data/dem/ (Jabal Sal' summit 674.7 m at 24.4772 N 39.5981 E,
+  ~70 m above the plain; Uhud 1070 m at 24.5214 N 39.6264 E). OSM: every Overpass mirror answered 502 / timeout
+  21:00-21:20 AEDT; the period-appropriate query (waterways, peaks, wells, historic sites; modern streets do not belong
+  in a 7th-century world) is in /home/moey/Dev/research/madinah-first-years-data/osm/query.txt.
+- Next if stage 2 is resumed: (1) change the hall's geometry, not its textures: girth varying along each trunk,
+  joists that sag and differ in spacing, ragged frond ends hanging from the roof edge; (2) port Horizon 133f332 (GI
+  gain 3 -> 1.5, gathered radiance cap 4 -> 2; white halos round sunlit boxes in Horizon); (3) the joist `rr()` calls
+  added in s2-i shift the shared random stream after the mosque timber, which moved a palm in dawn pose 1: switch them
+  to a position hash.
+
+### Stage 2 gate report (crop 0,.5,1,1, 1920x1080, six poses x three Times)
+
+| Gate | Live = stage 1 (verify/s1-i) | Stage 2 (verify/s2-k) | Result |
+|---|---|---|---|
+| brightdetail, day mean (dawn, golden) | 42.4 (48.7, 36.2) | 44.3 (50.7, 38.0) | +4.4%, pass (hold or rise) |
+| clip% max | 0.07 (dawn pose 5) | 0.08 (dawn pose 5) | pass (< 0.5); the +0.01 is glow beside the dawn sun, x 1840-1915 just under the horizon |
+| flatwhite% max | 0.69 (dawn pose 1) | 0.82 (dawn pose 1) | pass (< 2); the new pixels are haze glowing beside the dawn sun (x 1650-1913, y 544-604) |
+| GPU, 60 s flight 2560x1440 High | 7.95 avg, p99 12.68 | 8.16 avg, p99 12.69, max 13.99 (verify/s2k-gate/perf) | pass (<= 11 / <= 16) |
+| console errors, index.html, 3 Times x 3 levels | 0 | 0 at all 9 (verify/s2k-gate) | pass |
+| menu preview phone/tablet/desktop | renders | renders, 0 errors (verify/s2k-gate/menu) | pass |
+| index.html size | 122.6 KB | 124.6 KB | pass (< 160 KB) |
+| critic (5 rounds, sonnet, images only) | major | **major** | **fail, in scope (prayer-hall surfaces)** |
+
+Critic rounds (verify/s2-f, s2-h, s2-i, s2-j, s2-k critic.md, each with its disposition): in-scope majors fixed along
+the way: night hall black (moon bounce from the court), basalt brown (grey-black .06-.11, less dust, cooler), lava
+lobe a pasted tile (sand tongues over the edge, patchy rubble, softer margin, crags on Jabal Sal'), roof tiling
+(courses at varied angles, then bare stalks with frond patches), identical banded columns (irregular rings, then
+stacked leaf-base stubs), featureless floor (worn prayer rows, then single pebbles). Still major in round 5: the hall
+reads as "pipes" and a "pergola". Out of stage-2 scope, carried: night colour, the far shadow-map edge behind the cone,
+mud-brick look and windows, haze, dawn vs golden (stage 1); Uhud banding and detail, the layout reading as a grid
+(stage 3).
+
+What moved the numbers: s2-a (palms + GI + colonnade) 41.7; A/B showed the softer frond sheen and GI each cost about
+half of it; GI faded nearer (no gain, reverted); basalt, ditch banks, clouds 41.7; waxy frond glint 43.3; critic fixes
+42.9 -> 42.6 -> 44.3 -> 44.4 -> 44.3.
+
+### Stage 2 features (all on realism-s2)
+
+- Palms after Horizon ac0180e (glaucous fronds, per-palm tint, yellowing, dry tips, dead-frond skirt), plus a waxy glint.
+- Prayer hall as three porticoes of eight leaning, bowed palm trunks at 6.1 m bays (sources below); stalk roof.
+- Bounded screen-space GI after Horizon 8246d13 (gain 3, see next steps).
+- Altocumulus at 3 km after Horizon 02909b3.
+- Harrat basalt grey-black at albedo .06-.11; ditches dug between heaped spoil banks, wet toward the water.
 
 ### Stage 2 sources (mosque, 7 AH state)
 
